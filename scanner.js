@@ -1,6 +1,6 @@
-// ===== scanner.js — AI-Сканер страв (Google Gemini API) =====
+// ===== scanner.js — AI-Сканер страв =====
 
-const GEMINI_API_KEY = 'AIzaSyC7qNv8z3Qk3rK4X5Yz6W7T8U9I0O1P2Q3';
+const GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 let currentScannedRecipe = null;
@@ -11,14 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadArea = document.getElementById('upload-area');
     const photoInput = document.getElementById('photo-input');
 
-    // Вибір файлу (після вибору через галерею або камеру)
     photoInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
             handleFile(e.target.files[0]);
         }
     });
 
-    // Drag & Drop
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('dragover');
@@ -35,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ===== Відкрити галерею (за замовчуванням) =====
+// ===== Відкрити галерею =====
 function openGallery() {
     const input = document.getElementById('photo-input');
     input.removeAttribute('capture');
@@ -58,32 +56,38 @@ function handleFile(file) {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-        const base64 = e.target.result;
-        currentBase64Image = base64;
-
-        // Показати прев'ю
-        document.getElementById('preview-img').src = base64;
+        currentBase64Image = e.target.result;
+        document.getElementById('preview-img').src = currentBase64Image;
         document.getElementById('upload-area').classList.add('hidden');
         document.getElementById('photo-preview').classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
 
-// ===== Аналіз фото через Gemini API =====
+// ===== Аналіз фото =====
 async function analyzePhoto() {
     if (!currentBase64Image) {
         alert('Спочатку завантажте фото!');
         return;
     }
 
-    // Показати завантаження
     document.getElementById('photo-preview').classList.add('hidden');
     document.getElementById('scanner-loading').classList.remove('hidden');
     document.getElementById('scanner-result').classList.add('hidden');
     document.getElementById('scanner-error').classList.add('hidden');
 
     try {
-        // Підготовка зображення для API
+        if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY') {
+            // Демо-режим: аналіз через опис користувача
+            const userDesc = prompt('API ключ не налаштовано. Опишіть що на фото (наприклад: "борщ", "паста", "салат олів\'є"):');
+            if (!userDesc) throw new Error('Скасовано');
+
+            currentScannedRecipe = generateDemoRecipe(userDesc);
+            showResult(currentScannedRecipe);
+            return;
+        }
+
+        // Справжній запит до Gemini API
         const base64Data = currentBase64Image.split(',')[1];
         const mimeType = currentBase64Image.split(';')[0].split(':')[1] || 'image/jpeg';
 
@@ -119,18 +123,13 @@ async function analyzePhoto() {
         }
 
         const data = await response.json();
-
-        // Витягуємо текст відповіді
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) throw new Error('AI не зміг проаналізувати фото');
 
-        // Парсимо JSON
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('AI повернув некоректний формат');
 
         const recipe = JSON.parse(jsonMatch[0]);
-
-        // Валідація
         if (!recipe.name) throw new Error('Не вдалося визначити назву страви');
 
         currentScannedRecipe = {
@@ -149,6 +148,69 @@ async function analyzePhoto() {
     }
 }
 
+// ===== Демо-рецепти (коли API не налаштовано) =====
+function generateDemoRecipe(description) {
+    const desc = description.toLowerCase();
+
+    const recipes = {
+        'борщ': {
+            name: 'Борщ український',
+            category: 'Обід',
+            time: 90,
+            ingredients: ['500 г яловичини', '3 буряки', '3 картоплини', '1 морква', '1 цибулина', '200 г капусти', '2 ст.л. томатної пасти', '3 зубчики часнику', 'Лавровий лист', 'Сметана', 'Кріп', 'Сіль, перець'],
+            steps: ['Зварити бульйон з яловичини.', 'Натерти буряк, обсмажити з томатною пастою.', 'Нарізати картоплю та капусту.', 'Додати овочі в бульйон.', 'Додати буряк.', 'Варити 15 хвилин.', 'Додати часник та лавровий лист.', 'Подавати зі сметаною та кропом.']
+        },
+        'паста': {
+            name: 'Паста Карбонара',
+            category: 'Вечеря',
+            time: 25,
+            ingredients: ['300 г спагетті', '200 г бекону', '3 яйця', '100 г пармезану', 'Чорний перець', 'Сіль'],
+            steps: ['Зварити пасту.', 'Обсмажити бекон.', 'Змішати яйця з тертим сиром.', 'Змішати гарячу пасту з беконом.', 'Додати яєчну суміш.', 'Перемішати на малому вогні.', 'Посипати перцем та сиром.']
+        },
+        'олів\'є': {
+            name: 'Салат Олів\'є',
+            category: 'Святкова страва',
+            time: 40,
+            ingredients: ['400 г вареної ковбаси', '5 картоплин', '3 моркви', '4 яйця', '300 г горошку', '3 огірки', 'Майонез', 'Сіль'],
+            steps: ['Зварити картоплю, моркву та яйця.', 'Нарізати ковбасу та огірки.', 'Нарізати яйця та овочі кубиками.', 'Додати горошок.', 'Заправити майонезом.', 'Перемішати та поставити в холодильник.']
+        },
+        'куря': {
+            name: 'Курка запечена з картоплею',
+            category: 'Обід',
+            time: 60,
+            ingredients: ['1 курка', '1 кг картоплі', '2 моркви', '1 цибулина', '2 ст.л. оливкової олії', 'Паприка', 'Розмарин', 'Сіль, перець'],
+            steps: ['Промити курку.', 'Нарізати картоплю.', 'Нарізати овочі.', 'Змішати овочі з олією та спеціями.', 'Викласти на деко.', 'Запікати при 180°C 45 хвилин.']
+        },
+        'суп': {
+            name: 'Курячий суп з локшиною',
+            category: 'Обід',
+            time: 50,
+            ingredients: ['500 г курки', '2 картоплини', '1 морква', '1 цибулина', '100 г локшини', 'Кріп', 'Сіль'],
+            steps: ['Зварити курку.', 'Додати нарізану картоплю.', 'Додати натерту моркву та цибулю.', 'Варити 20 хвилин.', 'Додати локшину.', 'Варити 5 хвилин.', 'Посипати кропом.']
+        },
+        'сирники': {
+            name: 'Сирники',
+            category: 'Сніданок',
+            time: 20,
+            ingredients: ['400 г сиру', '2 яйця', '4 ст.л. цукру', '5 ст.л. борошна', 'Ванільний цукор', 'Олія для смаження', 'Сметана'],
+            steps: ['Протерти сир.', 'Додати яйця, цукор, борошно.', 'Вимісити тісто.', 'Сформувати кружечки.', 'Обсмажити на олії.', 'Подавати зі сметаною.']
+        }
+    };
+
+    for (const [key, recipe] of Object.entries(recipes)) {
+        if (desc.includes(key)) return recipe;
+    }
+
+    // Якщо не знайшли — повертаємо загальний рецепт
+    return {
+        name: description.charAt(0).toUpperCase() + description.slice(1),
+        category: 'Обід',
+        time: 30,
+        ingredients: ['Інгредієнт 1', 'Інгредієнт 2', 'Інгредієнт 3', 'Сіль', 'Перець'],
+        steps: ['Підготувати інгредієнти.', 'Змішати разом.', 'Приготувати.', 'Подати до столу.']
+    };
+}
+
 // ===== Показати результат =====
 function showResult(recipe) {
     document.getElementById('scanner-loading').classList.add('hidden');
@@ -163,15 +225,12 @@ function showResult(recipe) {
 
     document.getElementById('scanned-emoji').textContent = categoryEmojis[recipe.category] || '🍽️';
     document.getElementById('scanned-name').textContent = recipe.name;
-
     document.getElementById('scanned-meta').innerHTML = `
         <span class="note-tag">${recipe.category}</span>
         <span class="note-time">⏱ ${recipe.time} хв</span>
     `;
-
     document.getElementById('scanned-ingredients').innerHTML =
         recipe.ingredients.map(i => `<li>${i}</li>`).join('');
-
     document.getElementById('scanned-steps').innerHTML =
         recipe.steps.map(s => `<li>${s}</li>`).join('');
 }
@@ -220,7 +279,6 @@ function saveToNotes() {
     userNotes.unshift(noteToSave);
     localStorage.setItem(NOTES_KEY, JSON.stringify(userNotes));
 
-    // Підтвердження
     const btn = document.querySelector('.save-to-notes-btn');
     btn.textContent = '✅ Збережено!';
     btn.style.background = '#2D5016';
