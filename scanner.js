@@ -1,7 +1,124 @@
-// ===== scanner.js — Пошук рецептів в інтернеті =====
-const API_BASE = 'https://recipe-search-api.vercel.app';
+// ===== scanner.js — Пошук рецептів =====
 let currentScannedRecipe = null;
 let searchTimeout = null;
+const MEALDB = 'https://www.themealdb.com/api/json/v1/1';
+const API = 'https://recipe-search-api.vercel.app';
+
+// 80+ українських рецептів
+const LOCAL=[
+{n:'Торт Спартак',c:'Святкова страва',t:120,i:['4 яйця','200 г цукру','200 г борошна','2 ст.л. какао','400 г сметани','300 г масла'],s:['Збити яйця з цукром','Додати борошно та какао','Спечи 8 коржів','Збити масло з пудрою','Змішати сметану з цукром','Промазати кожен корж','Настояти 8 годин']},
+{n:'Торт Наполеон',c:'Святкова страва',t:90,i:['500 г борошна','300 г масла','3 яйця','1 л молока','300 г цукру'],s:['Спечи коржі','Зварити крем','Промазати коржі','Охолодити']},
+{n:'Торт Київський',c:'Святкова страва',t:90,i:['6 яєць','200 г цукру','200 г борошна','400 г масла','100 г шоколаду'],s:['Збити яйця','Додати какао','Спечи коржі','Збити масло','Промазати','Покрити шоколадом']},
+{n:'Медовик',c:'Святкова страва',t:60,i:['100 г меду','100 г цукру','100 г масла','500 г борошна','400 г сметани'],s:['Розігріти мед','Додати соду, яйця, борошно','Спечи коржі','Змішати сметану з цукром','Промазати']},
+{n:'Шарлотка',c:'Святкова страва',t:45,i:['4 яблука','3 яйця','1 склянка цукру','1 склянка борошна'],s:['Нарізати яблука','Збити яйця з цукром','Додати борошно','Випікати 35-40 хв']},
+{n:'Бісквіт',c:'Святкова страва',t:40,i:['4 яйця','200 г цукру','200 г борошна'],s:['Збити яйця з цукром','Додати борошно','Випікати при 180°C']},
+{n:'Прага',c:'Святкова страва',t:80,i:['4 яйця','200 г цукру','400 г згущеного молока','200 г масла'],s:['Збити яйця','Додати какао','Спечи коржі','Змішати згущене з маслом','Промазати']},
+{n:'Чорний ліс',c:'Святкова страва',t:90,i:['4 яйця','200 г цукру','100 г борошна','50 г какао','400 г вишні'],s:['Збити яйця','Додати борошно та какао','Спечи коржі','Збити вершки','Промазати']},
+{n:'Графські руїни',c:'Святкова страва',t:60,i:['300 г борошна','150 г масла','100 г шоколаду','200 г сметани'],s:['Замісити тісто','Спечи коржі','Розламати','Змішати сметану з шоколадом','Зібрати']},
+{n:'Борщ український',c:'Обід',t:90,i:['500 г яловичини','3 буряки','3 картоплини','200 г капусти'],s:['Зварити бульйон','Натерти буряк','Додати картоплю та капусту','Варити 15 хвилин']},
+{n:'Борщ з пампушками',c:'Обід',t:120,i:['500 г яловичини','3 буряки','пампушки'],s:['Зварити бульйон','Приготувати борщ','Спечи пампушки']},
+{n:'Грибний борщ',c:'Обід',t:60,i:['300 г грибів','3 буряки'],s:['Замочити гриби','Зварити бульйон','Додати овочі']},
+{n:'Свекольник',c:'Обід',t:30,i:['3 буряки','2 огірки','500 мл кефіру'],s:['Зварити буряк','Натерти','Змішати з кефіром']},
+{n:'Курячий суп',c:'Обід',t:50,i:['500 г курки','2 картоплини','100 г локшини'],s:['Зварити курку','Додати картоплю','Додати локшину']},
+{n:'Рибний суп',c:'Обід',t:50,i:['500 г риби','3 картоплини'],s:['Зварити рибу','Додати картоплю']},
+{n:'Юшка',c:'Обід',t:40,i:['300 г риби','2 картоплини'],s:['Зварити рибу','Додати овочі']},
+{n:'Крем-суп з гарбуза',c:'Обід',t:40,i:['500 г гарбуза','200 мл вершків'],s:['Обсмажити овочі','Додати гарбуз','Збити блендером']},
+{n:'Вареники з картоплею',c:'Обід',t:60,i:['500 г борошна','1 кг картоплі','300 г печериць'],s:['Замісити тісто','Зварити картоплю','Сформувати вареники']},
+{n:'Вареники з вишнями',c:'Обід',t:60,i:['500 г борошна','500 г вишні'],s:['Замісити тісто','Сформувати з вишнями','Зварити']},
+{n:'Вареники з сиром',c:'Обід',t:60,i:['500 г борошна','400 г сиру'],s:['Замісити тісто','Змішати сир з цукром','Зварити']},
+{n:'Голубці',c:'Обід',t:90,i:['1 качан капусти','500 г фаршу','200 г рису'],s:['Зняти листки','Загорнути','Залити соусом','Тушкувати 1 годину']},
+{n:'Котлети по-київськи',c:'Обід',t:40,i:['4 курячих філе','200 г масла'],s:['Розкачати філе','Загорнути масло','Обваляти в борошні, яйці, сухарях','Обсмажити']},
+{n:'Котлети з курки',c:'Обід',t:35,i:['500 г курячого фаршу','1 яйце'],s:['Змішати фарш','Сформувати','Обсмажити']},
+{n:'Курка запечена',c:'Обід',t:60,i:['1 курка','1 кг картоплі'],s:['Промити курку','Нарізати картоплю','Запікати при 180°C']},
+{n:'Плов',c:'Обід',t:60,i:['700 г баранини','400 г рису','3 моркви'],s:['Обсмажити м\'ясо','Додати моркву','Додати рис','Варити 20 хв']},
+{n:'Паста Карбонара',c:'Вечеря',t:25,i:['300 г спагетті','200 г бекону','3 яйця'],s:['Зварити пасту','Обсмажити бекон','Змішати']},
+{n:'Гречка з грибами',c:'Обід',t:25,i:['300 г гречки','200 г печериць'],s:['Обсмажити гриби','Зварити гречку','Змішати']},
+{n:'Банош',c:'Обід',t:30,i:['300 г кукурудзяної крупи','500 мл вершків'],s:['Зварити кашу','Додати сир']},
+{n:'Гречаники',c:'Обід',t:30,i:['300 г гречки','1 яйце'],s:['Зварити гречку','Додати яйце','Сформувати','Обсмажити']},
+{n:'Картопляне пюре',c:'Обід',t:25,i:['1 кг картоплі','100 мл молока'],s:['Зварити картоплю','Розтерти з молоком']},
+{n:'Олів\'є',c:'Обід',t:40,i:['400 г ковбаси','5 картоплин','4 яйця','300 г горошку'],s:['Зварити овочі','Нарізати','Заправити майонезом']},
+{n:'Вінегрет',c:'Обід',t:40,i:['3 буряки','3 картоплини','200 г квашеної капусти'],s:['Зварити овочі','Нарізати','Заправити олією']},
+{n:'Шуба',c:'Обід',t:60,i:['3 буряки','200 г оселедця'],s:['Зварити овочі','Нарізати шарами']},
+{n:'Грецький салат',c:'Обід',t:15,i:['2 помідори','1 огірок','100 г фети'],s:['Нарізати','Додати фету','Заправити олією']},
+{n:'Деруни',c:'Обід',t:30,i:['1 кг картоплі','1 яйце'],s:['Натерти картоплю','Додати яйце','Смажити']},
+{n:'Млинці',c:'Сніданок',t:30,i:['500 мл молока','2 яйця','200 г борошна'],s:['Змішати тісто','Смажити млинці']},
+{n:'Сирники',c:'Сніданок',t:20,i:['400 г сиру','2 яйця','5 ст.л. борошна'],s:['Протерти сир','Додати яйця та борошно','Сформувати','Обсмажити']},
+{n:'Сирна галета',c:'Сніданок',t:35,i:['300 г борошна','400 г сиру','100 г родзинок'],s:['Замісити тісто','Змішати сир','Запікати 25 хв']},
+{n:'Сирна запіканка',c:'Сніданок',t:40,i:['500 г сиру','3 яйця','100 г манки'],s:['Протерти сир','Додати яйця та манку','Випікати 40-45 хв']},
+{n:'Яєчня',c:'Сніданок',t:10,i:['4 яйця','1 помідор'],s:['Нарізати помідор','Вбити яйця']},
+{n:'Омлет',c:'Сніданок',t:10,i:['3 яйця','100 мл молока'],s:['Збити яйця','Смажити']},
+{n:'Бананові оладки',c:'Сніданок',t:20,i:['2 банани','2 яйця','100 г борошна'],s:['Розім\'яти банани','Додати яйця','Смажити']},
+{n:'Гречана каша',c:'Сніданок',t:25,i:['300 г гречки','50 г масла'],s:['Зварити гречку','Додати масло']},
+{n:'Піца Маргарита',c:'Вечеря',t:40,i:['300 г борошна','200 г моцарели','3 помідори'],s:['Замісити тісто','Викласти начинку','Випікати']},
+{n:'Піца Пепероні',c:'Вечеря',t:40,i:['300 г борошна','100 г пепероні'],s:['Замісити тісто','Викласти пепероні','Випікати']},
+{n:'Бургер',c:'Вечеря',t:30,i:['500 г фаршу','4 булочки'],s:['Сформувати котлети','Обсмажити','Зібрати']},
+{n:'Запечена риба',c:'Вечеря',t:35,i:['1 риба','1 лимон'],s:['Натерти спеціями','Запікати при 180°C']},
+{n:'Том Ям',c:'Вечеря',t:30,i:['300 г креветок','200 г грибів'],s:['Зварити бульйон','Додати пасту','Додати креветки']},
+{n:'Різотто',c:'Вечеря',t:35,i:['300 г рису','50 г пармезану'],s:['Обсмажити цибулю','Додати рис','Додавати бульйон']},
+{n:'Кесаділья',c:'Вечеря',t:15,i:['4 тортилі','200 г сиру'],s:['Обсмажити курку','Викласти на тортилю','Скласти навпіл']},
+{n:'Холодець',c:'Святкова страва',t:180,i:['1 кг свинячих ніг','500 г яловичини'],s:['Зварити м\'ясо 3 години','Розлити по формах','Застудити']},
+{n:'Паштет',c:'Святкова страва',t:90,i:['500 г печінки','100 г масла'],s:['Обсмажити печінку','Пропустити через м\'ясорубку']},
+{n:'Панна-кота',c:'Святкова страва',t:20,i:['400 мл вершків','10 г желатину'],s:['Замочити желатин','Розігріти вершки','Розлити по формах','Охолодити']},
+{n:'Тірамісу',c:'Святкова страва',t:30,i:['500 г маскарпоне','200 г печива','300 мл кави'],s:['Змішати жовтки','Додати маскарпоне','Макати печиво в каву','Викладати шарами']},
+{n:'Шоколадний мус',c:'Святкова страва',t:20,i:['200 г шоколаду','300 мл вершків'],s:['Розтопити шоколад','Збити вершки','Змішати','Охолодити']},
+{n:'Компот',c:'Обід',t:20,i:['500 г ягід','100 г цукру'],s:['Промити ягоди','Закип\'ятити воду','Варити 5-10 хв']},
+{n:'Узвар',c:'Святкова страва',t:30,i:['200 г сухофруктів'],s:['Промити сухофрукти','Варити 20 хв']},
+{n:'Какао',c:'Сніданок',t:5,i:['2 ст.л. какао','200 мл молока'],s:['Змішати какао','Додати молоко','Підігріти']},
+{n:'Рулет з лаваша',c:'Обід',t:20,i:['1 лаваш','300 г курки','200 г сиру'],s:['Нарізати курку','Викласти на лаваш','Згорнути']},
+{n:'Картопля фрі',c:'Обід',t:20,i:['1 кг картоплі'],s:['Нарізати соломкою','Обсмажити']},
+{n:'Запечена картопля',c:'Обід',t:40,i:['1 кг картоплі'],s:['Нарізати','Запікати при 200°C']},
+{n:'Капрезе',c:'Обід',t:10,i:['4 помідори','200 г моцарели'],s:['Нарізати','Викласти шарами']},
+{n:'Салат з куркою',c:'Обід',t:20,i:['300 г курки','1 авокадо'],s:['Нарізати','Змішати']},
+{n:'Тости з авокадо',c:'Сніданок',t:10,i:['2 тости','1 авокадо','1 яйце'],s:['Підсмажити тости','Розім\'яти авокадо']},
+{n:'Локшина по-східному',c:'Вечеря',t:20,i:['200 г локшини','200 г курки'],s:['Зварити локшину','Обсмажити курку','Змішати']},
+{n:'Наполеон з вишнями',c:'Святкова страва',t:80,i:['500 г борошна','300 г вишні'],s:['Спечи коржі','Зварити крем','Промазати']},
+{n:'Риба на грилі',c:'Вечеря',t:25,i:['400 г риби','Лимон'],s:['Натерти спеціями','Смажити на грилі']},
+{n:'Шаурма',c:'Вечеря',t:20,i:['Лаваш','Курка','Овочі'],s:['Нарізати курку','Загорнути в лаваш']},
+{n:'Хачапурі',c:'Вечеря',t:30,i:['500 г борошна','300 г сиру','Яйце'],s:['Замісити тісто','Викласти сир','Випікати']},
+{n:'Лагман',c:'Обід',t:40,i:['Локшина','500 г м\'яса'],s:['Зварити локшину','Обсмажити м\'ясо','Змішати']},
+{n:'Манти',c:'Обід',t:50,i:['500 г борошна','400 г фаршу'],s:['Замісити тісто','Сформувати','Готувати на пару']},
+{n:'Курка Теріякі',c:'Вечеря',t:25,i:['500 г курки','Соєвий соус','Мед'],s:['Замаринувати','Обсмажити','Полити соусом']},
+{n:'Спагетті Болоньєзе',c:'Вечеря',t:40,i:['300 г спагетті','400 г фаршу'],s:['Обсмажити фарш','Додати соус','Змішати з пастою']},
+{n:'Піца 4 сири',c:'Вечеря',t:40,i:['300 г борошна','Моцарела','Пармезан','Горгонзола'],s:['Замісити тісто','Викласти сири','Випікати']},
+{n:'Рамен',c:'Вечеря',t:40,i:['Локшина','Бульйон','Яйце','Курка'],s:['Зварити бульйон','Зварити локшину','Зібрати']},
+{n:'Пад Тай',c:'Вечеря',t:25,i:['Рисова локшина','Креветки','Арахіс'],s:['Замочити локшину','Обсмажити креветки','Змішати']},
+{n:'Суші',c:'Вечеря',t:30,i:['Рис','Норі','Риба','Авокадо'],s:['Зварити рис','Згорнути','Нарізати']},
+{n:'Боул з лососем',c:'Вечеря',t:20,i:['Лосось','Рис','Авокадо'],s:['Зварити рис','Нарізати лосось','Викласти']},
+{n:'Свинина запечена',c:'Обід',t:60,i:['1 кг свинини'],s:['Натерти спеціями','Запікати при 180°C']},
+{n:'Курка смажена',c:'Обід',t:30,i:['1 курка','Спеції'],s:['Натерти спеціями','Обсмажити']},
+{n:'Борщ з квасолею',c:'Обід',t:70,i:['300 г квасолі','3 буряки'],s:['Замочити квасолю','Зварити бульйон','Додати овочі']},
+{n:'Крем-суп з броколі',c:'Обід',t:30,i:['300 г броколі','200 мл вершків'],s:['Зварити броколі','Збити блендером']},
+{n:'Суп-пюре з грибами',c:'Обід',t:35,i:['300 г грибів','200 мл вершків'],s:['Обсмажити гриби','Зварити','Збити блендером']},
+{n:'Брускета',c:'Обід',t:10,i:['Хліб','Помідори','Базилік'],s:['Підсмажити хліб','Нарізати помідори']},
+{n:'Фахітас',c:'Вечеря',t:25,i:['500 г курки','Перець','Тортилі'],s:['Обсмажити курку з овочами','Викласти на тортилю']},
+{n:'Картопляні зірочки',c:'Обід',t:30,i:['1 кг картоплі','1 яйце','Борошно'],s:['Зварити картоплю','Додати яйце та борошно','Сформувати зірочки','Обсмажити']},
+];
+
+// ===== ПОШУК =====
+function searchLocal(q) {
+    const ql = q.toLowerCase();
+    const results = [];
+    LOCAL.forEach((r, idx) => {
+        if (r.n.toLowerCase().includes(ql)) results.push({ ...r, id: 'local-' + idx, source: 'local' });
+    });
+    return results;
+}
+
+async function searchMealDB(q) {
+    try {
+        const resp = await fetch(`${MEALDB}/search.php?s=${encodeURIComponent(q)}`);
+        const data = await resp.json();
+        if (!data.meals) return [];
+        return data.meals.map(m => {
+            const ings = [];
+            for (let j = 1; j <= 20; j++) {
+                const ing = m[`strIngredient${j}`]; const meas = m[`strMeasure${j}`];
+                if (ing && ing.trim()) ings.push(meas ? `${meas.trim()} ${ing.trim()}` : ing.trim());
+            }
+            return { id: 'mealdb-' + m.idMeal, name: m.strMeal, category: m.strCategory||'', time: 45, image: m.strMealThumb, ingredients: ings, steps: m.strInstructions ? m.strInstructions.split(/\r?\n/).filter(s=>s.trim().length>3) : [], source: 'themealdb' };
+        });
+    } catch(e) { return []; }
+}
 
 async function searchRecipes(query) {
     const container = document.getElementById('search-results');
@@ -10,57 +127,72 @@ async function searchRecipes(query) {
     container.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Шукаю...</div>';
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
-        let results = [];
-        try {
-            const r = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
-            const d = await r.json();
-            results = d.results || [];
-        } catch(e) { results = []; }
-        if (results.length === 0) {
-            container.innerHTML = `<div class="no-results-found"><p>😕 Нічого не знайдено</p><a href="https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт')}" target="_blank" class="google-search-btn">🔍 Шукати в Google</a></div>`;
+        // 1. Шукаємо локально (миттєво)
+        const local = searchLocal(query);
+        // 2. Шукаємо в TheMealDB (інтернет)
+        const mealdb = await searchMealDB(query);
+        const all = [...local, ...mealdb];
+        if (all.length === 0) {
+            container.innerHTML = `<div class="no-results-found"><p>😕 Нічого не знайдено</p><a href="https://www.google.com/search?q=${encodeURIComponent(query+' рецепт українською')}" target="_blank" class="google-search-btn">🔍 Шукати в Google</a></div>`;
             return;
         }
-        container.innerHTML = results.map(r => `
+        container.innerHTML = all.map(r => `
             <div class="search-result-card" onclick="showRecipe('${r.id}')">
                 ${r.image ? `<img src="${r.image}" class="search-result-img">` : ''}
-                <div class="search-result-info">
-                    <h4>${r.name}</h4>
-                    <div class="search-result-meta">
-                        <span class="note-tag">${r.category || ''}</span>
-                        <span class="note-time">⏱ ${r.time} хв</span>
-                        <span class="source-badge">${r.source === 'themealdb' ? '🌐 Інтернет' : '📚 Наша база'}</span>
-                    </div>
-                </div>
-            </div>
+                <div class="search-result-info"><h4>${r.name}</h4>
+                <div class="search-result-meta">
+                    <span class="note-tag">${r.category||''}</span>
+                    <span class="note-time">⏱ ${r.time} хв</span>
+                    <span class="source-badge">${r.source==='themealdb'?'🌐 Інтернет':'📚 Наша база'}</span>
+                </div></div></div>
         `).join('');
     }, 400);
 }
 
+// ===== ДЕТАЛІ =====
 async function showRecipe(id) {
     const container = document.getElementById('search-container');
     const view = document.getElementById('recipe-view');
     if (!container || !view) return;
-    container.classList.add('hidden');
-    view.classList.remove('hidden');
+    container.classList.add('hidden'); view.classList.remove('hidden');
     view.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Завантажую...</div>';
+
     let recipe = null;
+    // Спочатку спробувати бекенд
     try {
-        const r = await fetch(`${API_BASE}/api/recipe?id=${encodeURIComponent(id)}`);
+        const r = await fetch(`${API}/api/recipe?id=${id}`);
         if (r.ok) recipe = await r.json();
     } catch(e) {}
-    if (!recipe) { view.innerHTML = '<p>Не знайдено</p><button class="back-btn" onclick="backToSearch()">← Назад</button>'; return; }
+    // Якщо не вдалося — локально
+    if (!recipe && id.startsWith('local-')) {
+        const idx = parseInt(id.replace('local-',''));
+        if (LOCAL[idx]) recipe = { ...LOCAL[idx], id, source:'local' };
+    }
+    // Якщо TheMealDB — з API
+    if (!recipe && id.startsWith('mealdb-')) {
+        try {
+            const r = await fetch(`${MEALDB}/lookup.php?i=${id.replace('mealdb-','')}`);
+            const d = await r.json();
+            if (d.meals && d.meals[0]) {
+                const m = d.meals[0];
+                const ings = [];
+                for (let j=1;j<=20;j++){const ing=m[`strIngredient${j}`];const meas=m[`strMeasure${j}`];if(ing&&ing.trim())ings.push(meas?`${meas.trim()} ${ing.trim()}`:ing.trim());}
+                recipe = { id, name:m.strMeal, category:m.strCategory||'', time:45, image:m.strMealThumb, ingredients:ings, steps:m.strInstructions?m.strInstructions.split(/\r?\n/).filter(s=>s.trim().length>3):[], source:'themealdb' };
+            }
+        } catch(e) {}
+    }
+    if (!recipe) { view.innerHTML='<p>Не знайдено</p><button class="back-btn" onclick="backToSearch()">← Назад</button>'; return; }
+
     currentScannedRecipe = recipe;
-    const emojis = { 'Сніданок':'🌅', 'Обід':'☀️', 'Вечеря':'🌙', 'Святкова страва':'🎉', 'Dessert':'🍰', 'Side':'🥗', 'Pasta':'🍝', 'Seafood':'🐟', 'Chicken':'🍗', 'Beef':'🥩', 'Breakfast':'🌅', 'Vegan':'🌱', 'Vegetarian':'🥬' };
+    const emojis = {'Сніданок':'🌅','Обід':'☀️','Вечеря':'🌙','Святкова страва':'🎉','Dessert':'🍰','Pasta':'🍝','Seafood':'🐟','Chicken':'🍗','Beef':'🥩','Vegan':'🌱','Vegetarian':'🥬'};
     view.innerHTML = `
         <button class="back-btn" onclick="backToSearch()">← Назад до пошуку</button>
-        ${recipe.image ? `<img src="${recipe.image}" class="recipe-hero-img">` : ''}
-        <div class="recipe-view-header">
-            <span class="scanned-emoji">${emojis[recipe.category] || '🍽️'}</span>
-            <div><h3>${recipe.name}</h3>${recipe.source === 'themealdb' ? '<span class="source-badge inline">🌐 З інтернету</span>' : ''}</div>
-        </div>
+        ${recipe.image?`<img src="${recipe.image}" class="recipe-hero-img">`:''}
+        <div class="recipe-view-header"><span class="scanned-emoji">${emojis[recipe.category]||'🍽️'}</span>
+        <div><h3>${recipe.name}</h3>${recipe.source==='themealdb'?'<span class="source-badge inline">🌐 З інтернету</span>':''}</div></div>
         <div class="scanned-meta"><span class="note-tag">${recipe.category}</span><span class="note-time">⏱ ${recipe.time} хв</span></div>
-        <div class="scanned-section"><h4>Інгредієнти (${recipe.ingredients.length})</h4><ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul></div>
-        <div class="scanned-section"><h4>Кроки приготування</h4><ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol></div>
+        <div class="scanned-section"><h4>Інгредієнти (${recipe.ingredients.length})</h4><ul>${recipe.ingredients.map(i=>`<li>${i}</li>`).join('')}</ul></div>
+        <div class="scanned-section"><h4>Кроки приготування</h4><ol>${recipe.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
         <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>`;
 }
 
@@ -70,13 +202,13 @@ function backToSearch() {
     currentScannedRecipe = null;
 }
 
+// ===== ЗБЕРЕЖЕННЯ =====
 function showCategoryPicker() {
     if (!currentScannedRecipe) return;
     let modal = document.getElementById('category-modal');
     if (!modal) {
-        modal = document.createElement('div'); modal.id = 'category-modal'; modal.className = 'modal-overlay';
-        modal.innerHTML = `<div class="modal-content category-picker">
-            <h3>Куди зберегти?</h3>
+        modal = document.createElement('div'); modal.id='category-modal'; modal.className='modal-overlay';
+        modal.innerHTML = `<div class="modal-content category-picker"><h3>Куди зберегти?</h3>
             <p class="picker-recipe-name" id="picker-recipe-name"></p>
             <div class="category-options">
                 <button class="cat-btn" onclick="confirmSave('Сніданок')">🌅 Сніданок</button>
@@ -84,25 +216,24 @@ function showCategoryPicker() {
                 <button class="cat-btn" onclick="confirmSave('Вечеря')">🌙 Вечеря</button>
                 <button class="cat-btn" onclick="confirmSave('Святкова страва')">🎉 Святкова страва</button>
             </div>
-            <button class="btn-secondary" onclick="closeCategoryPicker()" style="margin-top:12px;width:100%">Скасувати</button>
-        </div>`;
+            <button class="btn-secondary" onclick="closeCategoryPicker()" style="margin-top:12px;width:100%">Скасувати</button></div>`;
         document.body.appendChild(modal);
     }
     document.getElementById('picker-recipe-name').textContent = currentScannedRecipe.name;
     modal.classList.add('active');
 }
-function closeCategoryPicker() { const m = document.getElementById('category-modal'); if (m) m.classList.remove('active'); }
-function confirmSave(category) {
-    if (!currentScannedRecipe) return;
-    let notes = []; try { const s = localStorage.getItem('smartcookbook_notes'); if (s) notes = JSON.parse(s); } catch(e) {}
-    notes.unshift({ id: Date.now(), name: currentScannedRecipe.name, category, time: currentScannedRecipe.time,
-        ingredients: Array.isArray(currentScannedRecipe.ingredients) ? currentScannedRecipe.ingredients.join('\n') : currentScannedRecipe.ingredients,
-        steps: Array.isArray(currentScannedRecipe.steps) ? currentScannedRecipe.steps.join('\n') : currentScannedRecipe.steps,
-        image: currentScannedRecipe.image || '', createdAt: new Date().toISOString() });
-    localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
+function closeCategoryPicker(){const m=document.getElementById('category-modal');if(m)m.classList.remove('active');}
+function confirmSave(category){
+    if(!currentScannedRecipe)return;
+    let notes=[];try{const s=localStorage.getItem('smartcookbook_notes');if(s)notes=JSON.parse(s);}catch(e){}
+    notes.unshift({id:Date.now(),name:currentScannedRecipe.name,category,time:currentScannedRecipe.time,
+        ingredients:Array.isArray(currentScannedRecipe.ingredients)?currentScannedRecipe.ingredients.join('\n'):currentScannedRecipe.ingredients,
+        steps:Array.isArray(currentScannedRecipe.steps)?currentScannedRecipe.steps.join('\n'):currentScannedRecipe.steps,
+        image:currentScannedRecipe.image||'',createdAt:new Date().toISOString()});
+    localStorage.setItem('smartcookbook_notes',JSON.stringify(notes));
     closeCategoryPicker();
-    const btn = document.querySelector('.save-to-notes-btn');
-    if (btn) { btn.textContent = '✅ Збережено!'; btn.style.background = '#2D5016'; btn.disabled = true;
-        setTimeout(() => { btn.textContent = '💾 Зберегти в Мій Блокнот'; btn.style.background = ''; btn.disabled = false; }, 2000); }
+    const btn=document.querySelector('.save-to-notes-btn');
+    if(btn){btn.textContent='✅ Збережено!';btn.style.background='#2D5016';btn.disabled=true;
+        setTimeout(()=>{btn.textContent='💾 Зберегти в Мій Блокнот';btn.style.background='';btn.disabled=false;},2000);}
 }
-function saveToNotes() { showCategoryPicker(); }
+function saveToNotes(){showCategoryPicker();}
