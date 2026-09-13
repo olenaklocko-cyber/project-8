@@ -89,9 +89,12 @@
                     <div class="upload-area" id="upload-area">
                         <div class="upload-icon">📸</div>
                         <p class="upload-text-main">Натисни або перетягни фото страви</p>
-                        <p class="upload-text-sub">На телефоні — зроби фото або обери з галереї</p>
-                        <input type="file" id="photo-input" accept="image/*" capture="environment" hidden>
-                        <button class="btn-primary upload-btn" onclick="document.getElementById('photo-input').click()">Обрати фото</button>
+                        <p class="upload-text-sub">Обери фото з галереї або зроби нове</p>
+                        <input type="file" id="photo-input" accept="image/*" hidden>
+                        <div class="upload-buttons">
+                            <button class="btn-primary upload-btn" onclick="openGallery()">🖼️ Обрати з галереї</button>
+                            <button class="btn-secondary upload-btn" onclick="openCamera()">📷 Зробити фото</button>
+                        </div>
                     </div>
 
                     <!-- Прев'ю фото -->

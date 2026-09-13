@@ -424,7 +424,14 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 }
 .upload-area:hover, .upload-area.dragover { border-color: #6BAF3D; background: #f9fff6; }
 .upload-icon { font-size: 64px; margin-bottom: 16px; }
-.upload-area p { color: #666; margin-bottom: 16px; font-size: 16px; }
+.upload-text-main { color: #666; margin-bottom: 6px; font-size: 16px; }
+.upload-text-sub { color: #999; margin-bottom: 20px; font-size: 13px; }
+.upload-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.upload-btn { padding: 14px 24px; font-size: 16px; font-weight: 700; border-radius: 14px; border: none; cursor: pointer; transition: all 0.3s; }
+.upload-btn:first-child { background: #6BAF3D; color: white; flex: 1; }
+.upload-btn:first-child:hover { background: #2D5016; }
+.upload-btn:last-child { background: #E8F5E1; color: #2D5016; border: 2px solid #6BAF3D; flex: 1; }
+.upload-btn:last-child:hover { background: #D4EDCC; }
 
 .photo-preview { text-align: center; }
 .photo-preview img {
@@ -470,6 +477,7 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
     .upload-icon { font-size: 56px; }
     .upload-text-main { font-size: 16px; }
     .upload-text-sub { font-size: 13px; color: #999; margin-bottom: 16px; }
+    .upload-buttons { flex-direction: column; }
     .upload-btn { width: 100%; padding: 16px; font-size: 17px; }
 
     .scanner-result { padding: 20px; }

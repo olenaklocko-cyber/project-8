@@ -24,10 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadArea = document.getElementById('upload-area');
     const photoInput = document.getElementById('photo-input');
 
-    // Клік по зоні завантаження
-    uploadArea.addEventListener('click', () => photoInput.click());
-
-    // Вибір файлу
+    // Вибір файлу (після вибору через галерею або камеру)
     photoInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
             handleFile(e.target.files[0]);
@@ -50,6 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// ===== Відкрити галерею (за замовчуванням) =====
+function openGallery() {
+    const input = document.getElementById('photo-input');
+    input.removeAttribute('capture');
+    input.click();
+}
+
+// ===== Відкрити камеру =====
+function openCamera() {
+    const input = document.getElementById('photo-input');
+    input.setAttribute('capture', 'environment');
+    input.click();
+}
 
 // ===== Обробка файлу =====
 function handleFile(file) {
