@@ -1,20 +1,7 @@
 // ===== scanner.js — AI-Сканер страв (Google Gemini API) =====
 
-// 🔑 Встав свій API ключ тут або введи при першому запуску
-const GEMINI_STORAGE_KEY = 'gemini_api_key';
-
-function getGeminiKey() {
-    let key = localStorage.getItem(GEMINI_STORAGE_KEY);
-    if (!key) {
-        key = prompt('Введи свій Gemini API ключ (отримай безкоштовно на aistudio.google.com/apikey):');
-        if (key && key.trim()) {
-            localStorage.setItem(GEMINI_STORAGE_KEY, key.trim());
-        }
-    }
-    return key;
-}
-
-const GEMINI_API_URL_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_KEY = 'AIzaSyC7qNv8z3Qk3rK4X5Yz6W7T8U9I0O1P2Q3';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 let currentScannedRecipe = null;
 let currentBase64Image = null;
@@ -96,12 +83,6 @@ async function analyzePhoto() {
     document.getElementById('scanner-error').classList.add('hidden');
 
     try {
-        // Отримуємо ключ
-        const apiKey = getGeminiKey();
-        if (!apiKey) {
-            throw new Error('API ключ не введено. Оновіть сторінку та спробуйте знову.');
-        }
-
         // Підготовка зображення для API
         const base64Data = currentBase64Image.split(',')[1];
         const mimeType = currentBase64Image.split(';')[0].split(':')[1] || 'image/jpeg';
@@ -126,7 +107,7 @@ async function analyzePhoto() {
             }
         };
 
-        const response = await fetch(`${GEMINI_API_URL_BASE}?key=${apiKey}`, {
+        const response = await fetch(GEMINI_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
