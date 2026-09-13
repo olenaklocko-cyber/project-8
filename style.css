@@ -496,6 +496,17 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 .recipe-view-header .scanned-emoji { font-size: 40px; }
 .recipe-view-header h3 { font-size: 22px; color: #2D5016; margin: 0; }
 
+.category-picker { text-align: center; padding: 28px; max-width: 340px; }
+.category-picker h3 { font-size: 20px; margin-bottom: 8px; }
+.picker-recipe-name { font-size: 15px; color: #666; margin-bottom: 20px; font-style: italic; }
+.category-options { display: flex; flex-direction: column; gap: 10px; }
+.cat-btn {
+    padding: 16px 20px; border: 2px solid #E0E0E0; border-radius: 14px;
+    background: white; font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: all 0.3s; font-family: inherit;
+}
+.cat-btn:hover { border-color: #FF6B35; background: #FFF5F0; transform: scale(1.02); }
+
 /* МОБІЛЬНА АДАПТАЦІЯ */
 @media (max-width: 768px) {
     .tab-nav { flex-wrap: wrap; }

@@ -109,13 +109,61 @@ function backToSearch() {
     currentScannedRecipe = null;
 }
 
-function saveToNotes() {
+function showCategoryPicker() {
+    if (!currentScannedRecipe) return;
+    let modal = document.getElementById('category-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'category-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content category-picker">
+                <h3>Куди зберегти?</h3>
+                <p class="picker-recipe-name" id="picker-recipe-name"></p>
+                <div class="category-options">
+                    <button class="cat-btn" onclick="confirmSave('Сніданок')">🌅 Сніданок</button>
+                    <button class="cat-btn" onclick="confirmSave('Обід')">☀️ Обід</button>
+                    <button class="cat-btn" onclick="confirmSave('Вечеря')">🌙 Вечеря</button>
+                    <button class="cat-btn" onclick="confirmSave('Святкова страва')">🎉 Святкова страва</button>
+                </div>
+                <button class="btn-secondary" onclick="closeCategoryPicker()" style="margin-top:12px;width:100%">Скасувати</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    document.getElementById('picker-recipe-name').textContent = currentScannedRecipe.name;
+    modal.classList.add('active');
+}
+
+function closeCategoryPicker() {
+    const modal = document.getElementById('category-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+function confirmSave(category) {
     if (!currentScannedRecipe) return;
     let notes = [];
     try { const s = localStorage.getItem('smartcookbook_notes'); if (s) notes = JSON.parse(s); } catch(e) {}
-    notes.unshift({ id: Date.now(), name: currentScannedRecipe.name, category: currentScannedRecipe.category, time: currentScannedRecipe.time, ingredients: currentScannedRecipe.ingredients.join('\n'), steps: currentScannedRecipe.steps.join('\n'), createdAt: new Date().toISOString() });
+    notes.unshift({
+        id: Date.now(),
+        name: currentScannedRecipe.name,
+        category: category,
+        time: currentScannedRecipe.time,
+        ingredients: Array.isArray(currentScannedRecipe.ingredients) ? currentScannedRecipe.ingredients.join('\n') : currentScannedRecipe.ingredients,
+        steps: Array.isArray(currentScannedRecipe.steps) ? currentScannedRecipe.steps.join('\n') : currentScannedRecipe.steps,
+        createdAt: new Date().toISOString()
+    });
     localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
+    closeCategoryPicker();
     const btn = document.querySelector('.save-to-notes-btn');
-    btn.textContent = '✅ Збережено!'; btn.style.background = '#2D5016'; btn.disabled = true;
-    setTimeout(() => { btn.textContent = '💾 Зберегти в Мій Блокнот'; btn.style.background = ''; btn.disabled = false; }, 2000);
+    if (btn) {
+        btn.textContent = '✅ Збережено в «' + category + '»!';
+        btn.style.background = '#2D5016';
+        btn.disabled = true;
+        setTimeout(() => { btn.textContent = '💾 Зберегти в Мій Блокнот'; btn.style.background = ''; btn.disabled = false; }, 2000);
+    }
+}
+
+function saveToNotes() {
+    showCategoryPicker();
 }
