@@ -151,8 +151,24 @@ function showResult(recipe) {
     document.getElementById('scanned-emoji').textContent = emojis[recipe.category] || '🍽️';
     document.getElementById('scanned-name').textContent = recipe.name;
     document.getElementById('scanned-meta').innerHTML = `<span class="note-tag">${recipe.category}</span><span class="note-time">⏱ ${recipe.time} хв</span>`;
-    document.getElementById('scanned-ingredients').innerHTML = recipe.ingredients.map(i => `<li>${i}</li>`).join('');
-    document.getElementById('scanned-steps').innerHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+
+    // Обробка інгредієнтів (можуть бути рядки або об'єкти)
+    const ingredients = recipe.ingredients.map(i => {
+        if (typeof i === 'object') {
+            return i.name || i.ingredient || JSON.stringify(i);
+        }
+        return String(i);
+    });
+    document.getElementById('scanned-ingredients').innerHTML = ingredients.map(i => `<li>${i}</li>`).join('');
+
+    // Обробка кроків (можуть бути рядки або об'єкти)
+    const steps = recipe.steps.map(s => {
+        if (typeof s === 'object') {
+            return s.text || s.step || s.description || JSON.stringify(s);
+        }
+        return String(s);
+    });
+    document.getElementById('scanned-steps').innerHTML = steps.map(s => `<li>${s}</li>`).join('');
 }
 
 function showError(message) {
@@ -173,9 +189,20 @@ function resetScanner() {
 
 function saveToNotes() {
     if (!currentScannedRecipe) return;
+
+    // Нормалізуємо інгредієнти та кроки
+    const ingredients = currentScannedRecipe.ingredients.map(i => {
+        if (typeof i === 'object') return i.name || i.ingredient || JSON.stringify(i);
+        return String(i);
+    });
+    const steps = currentScannedRecipe.steps.map(s => {
+        if (typeof s === 'object') return s.text || s.step || s.description || JSON.stringify(s);
+        return String(s);
+    });
+
     let notes = [];
     try { const s = localStorage.getItem('smartcookbook_notes'); if (s) notes = JSON.parse(s); } catch(e) {}
-    notes.unshift({ id: Date.now(), name: currentScannedRecipe.name, category: currentScannedRecipe.category, time: currentScannedRecipe.time, ingredients: currentScannedRecipe.ingredients.join('\n'), steps: currentScannedRecipe.steps.join('\n'), createdAt: new Date().toISOString() });
+    notes.unshift({ id: Date.now(), name: currentScannedRecipe.name, category: currentScannedRecipe.category, time: currentScannedRecipe.time, ingredients: ingredients.join('\n'), steps: steps.join('\n'), createdAt: new Date().toISOString() });
     localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
     const btn = document.querySelector('.save-to-notes-btn');
     btn.textContent = '✅ Збережено!'; btn.style.background = '#2D5016'; btn.disabled = true;
