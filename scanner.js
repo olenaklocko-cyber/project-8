@@ -144,13 +144,16 @@ function parseMealDB(meal) {
 function searchLocal(query) {
     const q = query.toLowerCase();
     // Спочатку шукаємо ТІЛЬКИ по назві (пріоритет)
-    const nameMatches = LOCAL_RECIPES.filter(r =>
-        r.name.toLowerCase().includes(q)
-    ).map((r, i) => ({ ...r, id: 'local-' + LOCAL_RECIPES.indexOf(r), source: 'local', matchType: 'name' }));
-    // Потім по інгредієнтах (якщо по назві нічого)
-    const ingMatches = nameMatches.length === 0 ? LOCAL_RECIPES.filter(r =>
-        r.ingredients.some(i => i.toLowerCase().includes(q))
-    ).map((r, i) => ({ ...r, id: 'local-' + LOCAL_RECIPES.indexOf(r), source: 'local', matchType: 'ingredient' })) : [];
+    const nameMatches = [];
+    const ingMatches = [];
+    LOCAL_RECIPES.forEach((r, idx) => {
+        const obj = { ...r, id: 'local-' + idx, source: 'local' };
+        if (r.name.toLowerCase().includes(q)) {
+            nameMatches.push(obj);
+        } else if (nameMatches.length === 0 && r.ingredients.some(i => i.toLowerCase().includes(q))) {
+            ingMatches.push(obj);
+        }
+    });
     return [...nameMatches, ...ingMatches];
 }
 
