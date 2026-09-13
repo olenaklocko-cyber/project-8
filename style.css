@@ -1,0 +1,501 @@
+/* ===== Smart-кулінарна книга: Базові стилі ===== */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #FFF8F0 0%, #FFF0E6 100%);
+    min-height: 100vh;
+    color: #2D2D2D;
+}
+
+#app { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+/* ШАПКА */
+header { text-align: center; padding: 30px 20px; }
+.header-icon { font-size: 60px; margin-bottom: 15px; }
+header h1 {
+    font-size: 42px; font-weight: 900;
+    background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
+
+/* ВКЛАДКИ */
+.tabs {
+    display: flex; gap: 8px; margin-bottom: 25px;
+    background: white; border-radius: 16px; padding: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    flex-wrap: wrap;
+}
+.tab-btn {
+    flex: 1; min-width: 120px; padding: 14px 10px;
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; font-family: 'Nunito', sans-serif;
+    cursor: pointer; background: transparent; color: #888;
+    transition: all 0.3s ease;
+}
+.tab-btn:hover { color: #FF6B35; background: rgba(255,107,53,0.08); }
+.tab-btn.active {
+    background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+    color: white; box-shadow: 0 4px 15px rgba(255,107,53,0.4);
+}
+
+/* КОНТЕНТ ВКЛАДОК */
+.tab-content { display: none; animation: fadeIn 0.4s ease; }
+.tab-content.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ЗАГОЛОВКИ СЕКЦІЙ */
+.section-header { text-align: center; margin-bottom: 25px; }
+.section-header h2 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+.section-header p { color: #888; font-size: 16px; }
+
+/* КНОПКИ */
+.btn-primary {
+    padding: 14px 28px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; font-family: 'Nunito', sans-serif;
+    cursor: pointer; background: linear-gradient(135deg, #FF6B35, #FF8C5A);
+    color: white; transition: all 0.3s ease;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,53,0.4); }
+
+.btn-secondary {
+    padding: 14px 28px; border: 2px solid #FF6B35; border-radius: 12px;
+    font-size: 16px; font-weight: 700; font-family: 'Nunito', sans-serif;
+    cursor: pointer; background: transparent; color: #FF6B35;
+    transition: all 0.3s ease;
+}
+.btn-secondary:hover { background: rgba(255,107,53,0.08); }
+
+.btn-back {
+    background: none; border: none; color: #FF6B35;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    margin-bottom: 20px;
+}
+
+/* ФІЛЬТРИ КАТЕГОРІЙ */
+.category-filters {
+    display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    justify-content: center;
+}
+.filter-btn {
+    padding: 10px 20px; border: 2px solid #eee; border-radius: 20px;
+    font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif;
+    cursor: pointer; background: white; color: #666;
+    transition: all 0.3s ease;
+}
+.filter-btn:hover { border-color: #FF6B35; color: #FF6B35; }
+.filter-btn.active { background: #FF6B35; color: white; border-color: #FF6B35; }
+
+/* ПОШУК */
+.search-box { margin-bottom: 20px; }
+.search-box input {
+    width: 100%; padding: 14px 20px; border: 2px solid #eee;
+    border-radius: 12px; font-size: 16px; font-family: 'Nunito', sans-serif;
+    transition: border-color 0.3s ease;
+}
+.search-box input:focus { outline: none; border-color: #FF6B35; }
+
+/* СІТКА РЕЦЕПТІВ */
+.recipes-grid, .holidays-grid, .notes-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+/* КАРТОЧКА РЕЦЕПТА */
+.recipe-card {
+    background: white; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+.recipe-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+
+.recipe-card-image {
+    width: 100%; height: 160px; object-fit: cover;
+    background: linear-gradient(135deg, #FFE0CC, #FFD0B5);
+}
+
+.recipe-card-body { padding: 16px; }
+.recipe-card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.recipe-card-meta { font-size: 13px; color: #888; }
+
+.recipe-card-tag {
+    display: inline-block; padding: 4px 10px; border-radius: 10px;
+    font-size: 12px; font-weight: 700; margin-top: 8px;
+}
+.tag-breakfast { background: #FFE0CC; color: #CC5500; }
+.tag-lunch { background: #E0F0FF; color: #0066CC; }
+.tag-dinner { background: #E8E0F0; color: #6633AA; }
+
+/* СВЯТКОВІ ЗАСТІЛЛЯ */
+.holiday-card {
+    background: white; border-radius: 16px; padding: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    text-align: center; cursor: pointer;
+    transition: transform 0.3s ease;
+}
+.holiday-card:hover { transform: translateY(-5px); }
+.holiday-icon { font-size: 50px; margin-bottom: 12px; }
+.holiday-title { font-size: 20px; font-weight: 700; }
+.holiday-subtitle { font-size: 14px; color: #888; margin-top: 6px; }
+
+/* AI-СКАНЕР */
+.scanner-container { max-width: 500px; margin: 0 auto; }
+
+.upload-area {
+    border: 3px dashed #FFB088; border-radius: 20px;
+    padding: 40px; text-align: center; background: white;
+    transition: border-color 0.3s ease;
+}
+.upload-area:hover { border-color: #FF6B35; }
+.upload-icon { font-size: 60px; margin-bottom: 15px; }
+
+.photo-preview { text-align: center; }
+.photo-preview img {
+    max-width: 100%; max-height: 300px; border-radius: 16px;
+    margin-bottom: 15px; object-fit: cover;
+}
+.preview-actions { display: flex; gap: 10px; justify-content: center; }
+
+.scanner-loading { text-align: center; padding: 40px; }
+.loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #eee;
+    border-top-color: #FF6B35; border-radius: 50%;
+    animation: spin 1s linear infinite; margin: 0 auto 15px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.scanner-result { background: white; border-radius: 16px; padding: 24px; }
+.scanner-error { text-align: center; padding: 30px; }
+.error-icon { font-size: 50px; margin-bottom: 15px; }
+
+/* БЛОКНОТ */
+.btn-add-note {
+    width: 100%; padding: 16px; border: 3px dashed #FFB088;
+    border-radius: 16px; font-size: 16px; font-weight: 700;
+    font-family: 'Nunito', sans-serif; cursor: pointer;
+    background: white; color: #FF6B35; margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+.btn-add-note:hover { border-color: #FF6B35; background: rgba(255,107,53,0.05); }
+
+.note-form {
+    background: white; border-radius: 16px; padding: 24px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.note-form h3 { margin-bottom: 16px; }
+.note-form input, .note-form textarea {
+    width: 100%; padding: 12px 16px; border: 2px solid #eee;
+    border-radius: 10px; font-size: 16px; font-family: 'Nunito', sans-serif;
+    margin-bottom: 12px; resize: vertical;
+}
+.note-form input:focus, .note-form textarea:focus { outline: none; border-color: #FF6B35; }
+.form-actions { display: flex; gap: 10px; }
+
+.empty-state { text-align: center; padding: 40px; color: #888; }
+.empty-icon { font-size: 60px; margin-bottom: 15px; }
+.empty-sub { font-size: 14px; margin-top: 6px; }
+
+.hidden { display: none !important; }
+
+/* МОДАЛЬНЕ ВІКНО РЕЦЕПТА */
+.recipe-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.recipe-modal.active { opacity: 1; }
+
+.modal-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative; background: white; border-radius: 20px;
+    max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;
+    padding: 30px; transform: translateY(30px) scale(0.95);
+    transition: transform 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.recipe-modal.active .modal-content { transform: translateY(0) scale(1); }
+
+.modal-close {
+    position: absolute; top: 15px; right: 15px;
+    width: 36px; height: 36px; border: none; border-radius: 50%;
+    background: #f0f0f0; font-size: 18px; cursor: pointer;
+    transition: background 0.2s;
+}
+.modal-close:hover { background: #e0e0e0; }
+
+.modal-header { text-align: center; margin-bottom: 20px; }
+.modal-emoji { font-size: 60px; display: block; margin-bottom: 10px; }
+.modal-header h2 { font-size: 24px; font-weight: 900; margin: 10px 0; }
+.modal-time { display: inline-block; margin-left: 10px; color: #888; font-size: 14px; }
+
+.modal-desc { color: #666; text-align: center; margin-bottom: 25px; line-height: 1.6; }
+
+.modal-section { margin-bottom: 25px; }
+.modal-section h3 {
+    font-size: 18px; font-weight: 700; margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 2px solid #FF6B35;
+    color: #FF6B35;
+}
+
+.modal-ingredients { list-style: none; }
+.modal-ingredients li {
+    padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+}
+.modal-ingredients li::before { content: "• "; color: #FF6B35; font-weight: bold; }
+
+.modal-steps { padding-left: 20px; }
+.modal-steps li {
+    padding: 10px 0; border-bottom: 1px solid #f0f0f0;
+    font-size: 15px; line-height: 1.6;
+}
+.modal-steps li:last-child { border-bottom: none; }
+.modal-steps li::marker { color: #FF6B35; font-weight: bold; }
+
+/* СВЯТКОВЕ МЕНЮ */
+.holiday-menu { padding: 20px 0; }
+.holiday-description { color: #666; text-align: center; margin-bottom: 30px; font-size: 16px; }
+
+.dish-section { margin-bottom: 30px; }
+.dish-section-title {
+    font-size: 20px; font-weight: 700; margin-bottom: 15px;
+    padding-bottom: 10px; border-bottom: 2px solid #FF6B35;
+}
+
+.dish-list { display: flex; flex-direction: column; gap: 10px; }
+
+.dish-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; background: white; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    cursor: pointer; transition: all 0.3s ease;
+}
+.dish-item:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+.dish-emoji { font-size: 24px; }
+.dish-name { flex: 1; font-weight: 600; font-size: 15px; }
+.dish-arrow { color: #FF6B35; font-size: 18px; font-weight: bold; }
+
+/* БЛОКНОТ — ФОРМА */
+.notes-header { text-align: center; margin-bottom: 30px; }
+.notes-title { font-size: 28px; color: #2D5016; margin-bottom: 8px; }
+.notes-subtitle { color: #666; font-size: 16px; }
+
+.add-recipe-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; max-width: 400px; margin: 0 auto 30px;
+    padding: 16px 24px; background: #E8F5E1; border: 3px dashed #6BAF3D;
+    border-radius: 16px; font-size: 18px; font-weight: 700; color: #2D5016;
+    cursor: pointer; transition: all 0.3s ease;
+}
+.add-recipe-btn:hover { background: #D4EDCC; border-color: #2D5016; transform: scale(1.02); }
+.add-icon { font-size: 24px; font-weight: bold; }
+
+.add-form-container {
+    max-width: 600px; margin: 0 auto 40px;
+    background: white; border-radius: 20px; padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1); border: 2px solid #E8F5E1;
+}
+.form-title { font-size: 22px; color: #2D5016; margin-bottom: 20px; text-align: center; }
+.form-group { margin-bottom: 18px; }
+.form-label { display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 14px; }
+.form-input, .form-select, .form-textarea {
+    width: 100%; padding: 12px 16px; border: 2px solid #E0E0E0; border-radius: 12px;
+    font-size: 15px; font-family: inherit; transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #6BAF3D; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 16px; }
+.form-row .form-group { flex: 1; }
+.time-input-wrapper { position: relative; }
+.time-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #999; font-size: 14px; }
+.form-actions { display: flex; gap: 12px; margin-top: 24px; }
+.form-btn-cancel, .form-btn-save {
+    flex: 1; padding: 14px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+}
+.form-btn-cancel { background: #F5F5F5; color: #666; }
+.form-btn-cancel:hover { background: #E0E0E0; }
+.form-btn-save { background: #6BAF3D; color: white; }
+.form-btn-save:hover { background: #2D5016; }
+
+/* БЛОКНОТ — КАРТКИ */
+.empty-notes {
+    text-align: center; padding: 60px 20px; color: #999;
+}
+.empty-icon { font-size: 64px; margin-bottom: 16px; }
+.empty-notes h3 { font-size: 20px; color: #666; margin-bottom: 8px; }
+
+.recipe-card.user-recipe { position: relative; }
+.recipe-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.recipe-emoji { font-size: 32px; }
+.delete-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: none;
+    background: #FFE0E0; color: #D32F2F; font-size: 14px; font-weight: bold;
+    cursor: pointer; opacity: 0; transition: all 0.3s;
+    display: flex; align-items: center; justify-content: center;
+}
+.recipe-card:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { background: #D32F2F; color: white; transform: scale(1.1); }
+
+.modal-meta { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.modal-actions { margin-top: 24px; text-align: center; }
+.modal-btn-delete {
+    padding: 12px 24px; background: #FFF0F0; border: 2px solid #D32F2F;
+    border-radius: 12px; color: #D32F2F; font-weight: 600; cursor: pointer;
+    transition: all 0.3s; font-size: 14px;
+}
+.modal-btn-delete:hover { background: #D32F2F; color: white; }
+
+/* КАРТКИ НОТАТОК */
+.notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.note-card {
+    background: white; border-radius: 16px; padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); cursor: pointer;
+    transition: all 0.3s ease; border: 2px solid transparent;
+}
+.note-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); border-color: #FF6B35; }
+.note-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.note-emoji { font-size: 28px; }
+.note-card-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.3s; }
+.note-card:hover .note-card-actions { opacity: 1; }
+.note-btn-edit, .note-btn-delete {
+    width: 28px; height: 28px; border-radius: 50%; border: none;
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+}
+.note-btn-edit { background: #E3F2FD; color: #1976D2; }
+.note-btn-edit:hover { background: #1976D2; color: white; }
+.note-btn-delete { background: #FFE0E0; color: #D32F2F; }
+.note-btn-delete:hover { background: #D32F2F; color: white; }
+.note-card-name { font-size: 16px; font-weight: 700; color: #333; margin-bottom: 6px; }
+.note-card-preview { font-size: 13px; color: #999; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.modal-btn-edit {
+    padding: 12px 24px; background: #E3F2FD; border: 2px solid #1976D2;
+    border-radius: 12px; color: #1976D2; font-weight: 600; cursor: pointer;
+    transition: all 0.3s; font-size: 14px; margin-right: 10px;
+}
+.modal-btn-edit:hover { background: #1976D2; color: white; }
+
+/* ФОРМА БЛОКНОТА — НОВІ ПОЛЯ */
+.note-form-row { display: flex; gap: 16px; margin-bottom: 14px; }
+.note-form-col { flex: 1; }
+.note-form-label { display: block; font-weight: 600; color: #333; margin-bottom: 6px; font-size: 14px; }
+.note-form-row select, .note-form-row input {
+    width: 100%; padding: 12px 16px; border: 2px solid #E0E0E0; border-radius: 12px;
+    font-size: 15px; font-family: inherit; box-sizing: border-box;
+}
+.note-form-row select:focus, .note-form-row input:focus { outline: none; border-color: #6BAF3D; }
+.note-time-wrapper { position: relative; }
+.note-time-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #999; font-size: 14px; }
+
+/* КАРТКИ — ТЕГИ */
+.note-card-meta { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+.note-tag {
+    display: inline-block; padding: 3px 10px; background: #E8F5E1;
+    border-radius: 20px; font-size: 12px; font-weight: 600; color: #2D5016;
+}
+.note-time {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 12px; color: #666;
+}
+.modal-meta .note-tag { background: #E8F5E1; }
+.modal-meta .note-time { font-size: 14px; color: #555; }
+
+/* AI-СКАНЕР */
+.scanner-container { max-width: 500px; margin: 0 auto; }
+.upload-area {
+    border: 3px dashed #ccc; border-radius: 20px; padding: 50px 30px;
+    text-align: center; cursor: pointer; transition: all 0.3s;
+}
+.upload-area:hover, .upload-area.dragover { border-color: #6BAF3D; background: #f9fff6; }
+.upload-icon { font-size: 64px; margin-bottom: 16px; }
+.upload-area p { color: #666; margin-bottom: 16px; font-size: 16px; }
+
+.photo-preview { text-align: center; }
+.photo-preview img {
+    max-width: 100%; max-height: 300px; border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15); margin-bottom: 16px;
+}
+.preview-actions { display: flex; gap: 12px; justify-content: center; }
+
+.scanner-loading { text-align: center; padding: 50px 20px; }
+.loading-spinner {
+    width: 50px; height: 50px; border: 4px solid #E8F5E1;
+    border-top-color: #6BAF3D; border-radius: 50%;
+    animation: spin 1s linear infinite; margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.scanner-loading p { color: #666; font-size: 16px; }
+
+.scanner-error { text-align: center; padding: 40px 20px; }
+.error-icon { font-size: 48px; margin-bottom: 12px; }
+.scanner-error p { color: #D32F2F; margin-bottom: 16px; }
+
+.scanner-result {
+    background: white; border-radius: 20px; padding: 28px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08); border: 2px solid #E8F5E1;
+}
+.scanned-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.scanned-emoji { font-size: 42px; }
+.scanned-header h3 { font-size: 22px; color: #2D5016; margin: 0; }
+.scanned-meta { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+.scanned-section { margin-bottom: 20px; }
+.scanned-section h4 { font-size: 16px; color: #333; margin-bottom: 10px; border-bottom: 2px solid #E8F5E1; padding-bottom: 6px; }
+.scanned-section ul, .scanned-section ol { padding-left: 20px; }
+.scanned-section li { margin-bottom: 6px; color: #555; line-height: 1.5; }
+.save-to-notes-btn { width: 100%; margin-top: 10px; font-size: 16px; padding: 16px; }
+
+/* МОБІЛЬНА АДАПТАЦІЯ */
+@media (max-width: 768px) {
+    .tab-nav { flex-wrap: wrap; }
+    .tab-btn { font-size: 13px; padding: 10px 14px; min-width: 0; flex: 1 1 45%; }
+    .tab-btn.active::after { display: none; }
+
+    .upload-area { padding: 40px 20px; min-height: 200px; }
+    .upload-icon { font-size: 56px; }
+    .upload-text-main { font-size: 16px; }
+    .upload-text-sub { font-size: 13px; color: #999; margin-bottom: 16px; }
+    .upload-btn { width: 100%; padding: 16px; font-size: 17px; }
+
+    .scanner-result { padding: 20px; }
+    .scanned-emoji { font-size: 36px; }
+    .scanned-header h3 { font-size: 18px; }
+
+    .preview-actions { flex-direction: column; }
+    .preview-actions .btn-primary, .preview-actions .btn-secondary { width: 100%; }
+
+    .notes-grid { grid-template-columns: 1fr; }
+    .note-form-row { flex-direction: column; gap: 0; }
+    .note-form-col { width: 100%; }
+
+    .catalog-grid { grid-template-columns: 1fr; }
+    .holidays-grid { grid-template-columns: 1fr; }
+
+    .modal-content { width: 95%; max-height: 90vh; padding: 20px; }
+    .modal-header h2 { font-size: 20px; }
+
+    .holiday-card { padding: 20px; }
+
+    .section-header h2 { font-size: 24px; }
+    .section-header p { font-size: 14px; }
+}
+
+@media (max-width: 400px) {
+    .tab-btn { font-size: 12px; padding: 8px 10px; }
+    .upload-area { padding: 30px 15px; }
+}

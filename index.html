@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart-кулінарна книга</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=1.0">
+</head>
+<body>
+    <div id="app">
+        <!-- ШАПКА -->
+        <header>
+            <div class="header-icon">📖</div>
+            <h1>Smart-кулінарна книга</h1>
+            <p class="subtitle">Твої рецепти з штучним інтелектом</p>
+        </header>
+
+        <!-- НАВІГАЦІЯ (ВКЛАДКИ) -->
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="switchTab('catalog')">🍳 Каталог</button>
+            <button class="tab-btn" onclick="switchTab('holidays')">🎉 Свята</button>
+            <button class="tab-btn" onclick="switchTab('scanner')">📸 AI-Сканер</button>
+            <button class="tab-btn" onclick="switchTab('notes')">📝 Блокнот</button>
+        </nav>
+
+        <main>
+            <!-- ==================== -->
+            <!-- ВКЛАДКА 1: КАТАЛОГ -->
+            <!-- ==================== -->
+            <div id="catalog-tab" class="tab-content active">
+                <div class="section-header">
+                    <h2>Каталог рецептів</h2>
+                    <p>Обери категорію та знайди ідеальний рецепт</p>
+                </div>
+
+                <!-- Фільтри категорій -->
+                <div class="category-filters">
+                    <button class="filter-btn active" onclick="filterCategory('all')">Усі</button>
+                    <button class="filter-btn" onclick="filterCategory('breakfast')">🌅 Сніданок</button>
+                    <button class="filter-btn" onclick="filterCategory('lunch')">☀️ Обід</button>
+                    <button class="filter-btn" onclick="filterCategory('dinner')">🌙 Вечеря</button>
+                </div>
+
+                <!-- Пошук -->
+                <div class="search-box">
+                    <input type="text" id="catalog-search" placeholder="🔍 Пошук рецепта..." oninput="searchRecipes(this.value)">
+                </div>
+
+                <!-- Картки рецептів -->
+                <div class="recipes-grid" id="catalog-grid">
+                    <!-- Тут рендеряться картки рецептів -->
+                </div>
+            </div>
+
+            <!-- ========================== -->
+            <!-- ВКЛАДКА 2: СВЯТКОВІ ЗАСТІЛЛЯ -->
+            <!-- ========================== -->
+            <div id="holidays-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Святкові застілля</h2>
+                    <p>Готові меню для твоїх свят</p>
+                </div>
+
+                <!-- Картки свят -->
+                <div class="holidays-grid" id="holidays-grid">
+                    <!-- Тут рендеряться картки свят -->
+                </div>
+
+                <!-- Розгорнуте меню свята (приховане) -->
+                <div id="holiday-menu" class="holiday-menu hidden">
+                    <button class="btn-back" onclick="closeHolidayMenu()">← Назад до свят</button>
+                    <h3 id="holiday-title"></h3>
+                    <div id="holiday-dishes"></div>
+                </div>
+            </div>
+
+            <!-- ==================== -->
+            <!-- ВКЛАДКА 3: AI-СКАНЕР -->
+            <!-- ==================== -->
+            <div id="scanner-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>AI-Сканер страв</h2>
+                    <p>Завантаж фото — отримай рецепт!</p>
+                </div>
+
+                <div class="scanner-container">
+                    <!-- Завантаження фото -->
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-icon">📸</div>
+                        <p class="upload-text-main">Натисни або перетягни фото страви</p>
+                        <p class="upload-text-sub">На телефоні — зроби фото або обери з галереї</p>
+                        <input type="file" id="photo-input" accept="image/*" capture="environment" hidden>
+                        <button class="btn-primary upload-btn" onclick="document.getElementById('photo-input').click()">Обрати фото</button>
+                    </div>
+
+                    <!-- Прев'ю фото -->
+                    <div id="photo-preview" class="photo-preview hidden">
+                        <img id="preview-img" src="" alt="Прев'ю">
+                        <div class="preview-actions">
+                            <button class="btn-primary" onclick="analyzePhoto()">🔍 Аналізувати</button>
+                            <button class="btn-secondary" onclick="resetScanner()">🔄 Інше фото</button>
+                        </div>
+                    </div>
+
+                    <!-- Завантаження -->
+                    <div id="scanner-loading" class="scanner-loading hidden">
+                        <div class="loading-spinner"></div>
+                        <p>AI аналізує страву...</p>
+                    </div>
+
+                    <!-- Результат аналізу -->
+                    <div id="scanner-result" class="scanner-result hidden">
+                        <div class="scanned-header">
+                            <span class="scanned-emoji" id="scanned-emoji">🍽️</span>
+                            <h3 id="scanned-name"></h3>
+                        </div>
+                        <div class="scanned-meta" id="scanned-meta"></div>
+                        <div class="scanned-section">
+                            <h4>Інгредієнти</h4>
+                            <ul id="scanned-ingredients"></ul>
+                        </div>
+                        <div class="scanned-section">
+                            <h4>Кроки приготування</h4>
+                            <ol id="scanned-steps"></ol>
+                        </div>
+                        <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>
+                    </div>
+
+                    <!-- Помилка -->
+                    <div id="scanner-error" class="scanner-error hidden">
+                        <div class="error-icon">😵</div>
+                        <p>Ой, щось пішло не так...</p>
+                        <button class="btn-secondary" onclick="resetScanner()">🔄 Спробувати знову</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== -->
+            <!-- ВКЛАДКА 4: МІЙ БЛОКНОТ -->
+            <!-- ==================== -->
+            <div id="notes-tab" class="tab-content">
+                <div class="section-header">
+                    <h2>Мій блокнот</h2>
+                    <p>Твої особисті рецепти</p>
+                </div>
+
+                <!-- Кнопка додавання -->
+                <button class="btn-add-note" onclick="openNoteForm()">➕ Додати рецепт</button>
+
+                <!-- Форма додавання (прихована) -->
+                <div id="note-form" class="note-form hidden">
+                    <h3 id="note-form-title">Новий рецепт</h3>
+                    <input type="hidden" id="note-edit-id">
+                    <input type="text" id="note-name" placeholder="Назва страви">
+
+                    <div class="note-form-row">
+                        <div class="note-form-col">
+                            <label class="note-form-label">Категорія</label>
+                            <select id="note-category">
+                                <option value="">Оберіть категорію</option>
+                                <option value="Сніданок">🌅 Сніданок</option>
+                                <option value="Обід">☀️ Обід</option>
+                                <option value="Вечеря">🌙 Вечеря</option>
+                                <option value="Святкова страва">🎉 Святкова страва</option>
+                            </select>
+                        </div>
+                        <div class="note-form-col">
+                            <label class="note-form-label">Час приготування</label>
+                            <div class="note-time-wrapper">
+                                <input type="number" id="note-time" placeholder="45" min="1" max="1440">
+                                <span class="note-time-unit">хв</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <textarea id="note-ingredients" placeholder="Інгредієнти (кожен з нового рядка)"></textarea>
+                    <textarea id="note-steps" placeholder="Кроки приготування (кожен з нового рядка)"></textarea>
+                    <div class="form-actions">
+                        <button class="btn-primary" onclick="saveNote()">💾 Зберегти</button>
+                        <button class="btn-secondary" onclick="closeNoteForm()">Скасувати</button>
+                    </div>
+                </div>
+
+                <!-- Картки рецептів -->
+                <div class="notes-grid" id="notes-grid">
+                    <!-- Тут рендеряться картки нотаток -->
+                </div>
+
+                <!-- Порожній стан -->
+                <div id="empty-notes" class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <p>Ще немає рецептів</p>
+                    <p class="empty-sub">Додай свій перший рецепт!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Підключення JS модулів -->
+    <script src="catalog.js?v=1.0"></script>
+    <script src="holidays.js?v=1.0"></script>
+    <script src="scanner.js?v=1.0"></script>
+    <script src="notes.js?v=1.0"></script>
+    <script src="main.js?v=1.0"></script>
+</body>
+</html>
