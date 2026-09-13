@@ -143,10 +143,15 @@ function parseMealDB(meal) {
 // ===== Пошук у локальній базі =====
 function searchLocal(query) {
     const q = query.toLowerCase();
-    return LOCAL_RECIPES.filter(r =>
-        r.name.toLowerCase().includes(q) ||
+    // Спочатку шукаємо ТІЛЬКИ по назві (пріоритет)
+    const nameMatches = LOCAL_RECIPES.filter(r =>
+        r.name.toLowerCase().includes(q)
+    ).map((r, i) => ({ ...r, id: 'local-' + LOCAL_RECIPES.indexOf(r), source: 'local', matchType: 'name' }));
+    // Потім по інгредієнтах (якщо по назві нічого)
+    const ingMatches = nameMatches.length === 0 ? LOCAL_RECIPES.filter(r =>
         r.ingredients.some(i => i.toLowerCase().includes(q))
-    ).map((r, i) => ({ ...r, id: 'local-' + i, source: 'local' }));
+    ).map((r, i) => ({ ...r, id: 'local-' + LOCAL_RECIPES.indexOf(r), source: 'local', matchType: 'ingredient' })) : [];
+    return [...nameMatches, ...ingMatches];
 }
 
 // ===== ГОЛОВНИЙ ПОШУК =====
