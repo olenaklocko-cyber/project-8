@@ -76,66 +76,37 @@
             </div>
 
             <!-- ==================== -->
-            <!-- ВКЛАДКА 3: AI-СКАНЕР -->
+            <!-- ВКЛАДКА 3: ПОШУК РЕЦЕПТІВ -->
             <!-- ==================== -->
             <div id="scanner-tab" class="tab-content">
                 <div class="section-header">
-                    <h2>AI-Сканер страв</h2>
-                    <p>Завантаж фото — отримай рецепт!</p>
+                    <h2>🔍 Пошук рецепта</h2>
+                    <p>Знайди ідеальний рецепт!</p>
                 </div>
 
-                <div class="scanner-container">
-                    <!-- Завантаження фото -->
-                    <div class="upload-area" id="upload-area">
-                        <div class="upload-icon">📸</div>
-                        <p class="upload-text-main">Натисни або перетягни фото страви</p>
-                        <p class="upload-text-sub">Обери фото з галереї або зроби нове</p>
-                        <input type="file" id="photo-input" accept="image/*" hidden>
-                        <div class="upload-buttons">
-                            <button class="btn-primary upload-btn" onclick="openGallery()">🖼️ Обрати з галереї</button>
-                            <button class="btn-secondary upload-btn" onclick="openCamera()">📷 Зробити фото</button>
-                        </div>
+                <div id="search-container">
+                    <div class="search-box">
+                        <input type="text" id="recipe-search" placeholder="Напиши назву страви..." oninput="searchRecipes(this.value)">
                     </div>
+                    <div id="search-results" class="search-results"></div>
+                </div>
 
-                    <!-- Прев'ю фото -->
-                    <div id="photo-preview" class="photo-preview hidden">
-                        <img id="preview-img" src="" alt="Прев'ю">
-                        <div class="preview-actions">
-                            <button class="btn-primary" onclick="analyzePhoto()">🔍 Аналізувати</button>
-                            <button class="btn-secondary" onclick="resetScanner()">🔄 Інше фото</button>
-                        </div>
+                <div id="recipe-view" class="recipe-view hidden">
+                    <button class="back-btn" onclick="backToSearch()">← Назад до пошуку</button>
+                    <div class="recipe-view-header">
+                        <span class="scanned-emoji" id="recipe-emoji">🍽️</span>
+                        <h3 id="recipe-name"></h3>
                     </div>
-
-                    <!-- Завантаження -->
-                    <div id="scanner-loading" class="scanner-loading hidden">
-                        <div class="loading-spinner"></div>
-                        <p>AI аналізує страву...</p>
+                    <div class="scanned-meta" id="recipe-meta"></div>
+                    <div class="scanned-section">
+                        <h4>Інгредієнти</h4>
+                        <ul id="recipe-ingredients"></ul>
                     </div>
-
-                    <!-- Результат аналізу -->
-                    <div id="scanner-result" class="scanner-result hidden">
-                        <div class="scanned-header">
-                            <span class="scanned-emoji" id="scanned-emoji">🍽️</span>
-                            <h3 id="scanned-name"></h3>
-                        </div>
-                        <div class="scanned-meta" id="scanned-meta"></div>
-                        <div class="scanned-section">
-                            <h4>Інгредієнти</h4>
-                            <ul id="scanned-ingredients"></ul>
-                        </div>
-                        <div class="scanned-section">
-                            <h4>Кроки приготування</h4>
-                            <ol id="scanned-steps"></ol>
-                        </div>
-                        <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>
+                    <div class="scanned-section">
+                        <h4>Кроки приготування</h4>
+                        <ol id="recipe-steps"></ol>
                     </div>
-
-                    <!-- Помилка -->
-                    <div id="scanner-error" class="scanner-error hidden">
-                        <div class="error-icon">😵</div>
-                        <p>Ой, щось пішло не так...</p>
-                        <button class="btn-secondary" onclick="resetScanner()">🔄 Спробувати знову</button>
-                    </div>
+                    <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>
                 </div>
             </div>
 
