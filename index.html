@@ -80,34 +80,18 @@
             <!-- ==================== -->
             <div id="scanner-tab" class="tab-content">
                 <div class="section-header">
-                    <h2>🔍 Пошук рецепта</h2>
-                    <p>Знайди ідеальний рецепт!</p>
+                    <h2>🔍 Пошук рецептів</h2>
+                    <p>Шукай будь-яку страву в інтернеті!</p>
                 </div>
 
                 <div id="search-container">
                     <div class="search-box">
-                        <input type="text" id="recipe-search" placeholder="Напиши назву страви..." oninput="searchRecipes(this.value)">
+                        <input type="text" id="recipe-search" placeholder="Напиши назву страви, наприклад: Торт Спартак..." oninput="searchRecipes(this.value)">
                     </div>
                     <div id="search-results" class="search-results"></div>
                 </div>
 
-                <div id="recipe-view" class="recipe-view hidden">
-                    <button class="back-btn" onclick="backToSearch()">← Назад до пошуку</button>
-                    <div class="recipe-view-header">
-                        <span class="scanned-emoji" id="recipe-emoji">🍽️</span>
-                        <h3 id="recipe-name"></h3>
-                    </div>
-                    <div class="scanned-meta" id="recipe-meta"></div>
-                    <div class="scanned-section">
-                        <h4>Інгредієнти</h4>
-                        <ul id="recipe-ingredients"></ul>
-                    </div>
-                    <div class="scanned-section">
-                        <h4>Кроки приготування</h4>
-                        <ol id="recipe-steps"></ol>
-                    </div>
-                    <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>
-                </div>
+                <div id="recipe-view" class="recipe-view hidden"></div>
             </div>
 
             <!-- ==================== -->

@@ -1,106 +1,209 @@
-// ===== scanner.js — Пошук рецептів =====
+// ===== scanner.js — Пошук рецептів в інтернеті =====
 
 let currentScannedRecipe = null;
+let searchTimeout = null;
 
-// Велика база рецептів
-const RECIPES_DB = [
-    // СНІДАНКИ
-    { name: 'Сирники', category: 'Сніданок', time: 20, ingredients: ['400 г сиру', '2 яйця', '4 ст.л. цукру', '5 ст.л. борошна', 'Ванілін', 'Олія для смаження', 'Сметана'], steps: ['Протерти сир через сито.', 'Додати яйця, цукор та ванілін.', 'Всипати борошно та вимісити тісто.', 'Сформувати круглі сирники.', 'Обсмажити на олії з обох сторін.', 'Подавати зі сметаною.'], tags: ['сирники', 'сир', 'сніданок'] },
-    { name: 'Млинці з сиром', category: 'Сніданок', time: 30, ingredients: ['500 мл молока', '2 яйця', '200 г борошна', '2 ст.л. цукру', '300 г сиру', '100 г сметани', 'Вершкове масло'], steps: ['Змішати молоко, яйця, борошно та цукр.', 'Смажити тонкі млинці на сковороді.', 'Змішати сир з цукром для начинки.', 'Наповнити млинці сиром.', 'Згорнути рулетиками.', 'Подавати зі сметаною та маслом.'], tags: ['млинці', 'сир', 'сніданок'] },
-    { name: 'Сирна галета', category: 'Сніданок', time: 35, ingredients: ['300 г борошна', '150 г масла', '1 яйце', '400 г сиру', '100 г цукру', '100 г родзинок', 'Ванілін', 'Цукрова пудра'], steps: ['Замісити тісто з борошна, масла та яйця.', 'Розкачати та викласти у форму.', 'Змішати сир з цукром та родзинками.', 'Викласти начинку.', 'Запікати при 180°C 25 хвилин.', 'Посипати цукровою пудрою.'], tags: ['галета', 'сир', 'випічка', 'сніданок'] },
-    { name: 'Галета зі сливами', category: 'Сніданок', time: 40, ingredients: ['250 г борошна', '125 г масла', '1 яйце', '300 г сиру', '80 г цукру', '6-8 слив', '1 ст.л. крохмалю', 'Цукрова пудра'], steps: ['Замісити тісто з борошна, масла та яйця.', 'Охолодити тісто 30 хвилин.', 'Розкачати та викласти у форму.', 'Змішати сир з цукром та крохмалем.', 'Викласти сирну начинку.', 'Сливи розрізати навпіл, викласти зверху.', 'Запікати при 180°C 30-35 хвилин.', 'Посипати цукровою пудрою.'], tags: ['галета', 'сливи', 'сир', 'випічка'] },
-    { name: 'Бананові оладки', category: 'Сніданок', time: 20, ingredients: ['2 банани', '2 яйця', '100 г борошна', '100 мл молока', '1 ст.л. цукру', 'Щіпка солі', 'Олія для смаження'], steps: ['Розім\'яти банани виделкою.', 'Додати яйця та молоко.', 'Всипати борошно та цукр.', 'Перемішати до однорідності.', 'Смажити оладки на сковороді.', 'Подавати з медом або варенням.'], tags: ['оладки', 'банан', 'сніданок'] },
-    { name: 'Тост з лососем', category: 'Сніданок', time: 15, ingredients: ['4 скибочки хліба', '200 г слабосолоного лосося', '100 г крем-чізу', 'Кріп', 'Лимон'], steps: ['Підсмажити тости.', 'Намазати крем-чіз.', 'Викласти лосось.', 'Прикрасити кропом.', 'Полити лимоном.'], tags: ['тост', 'лосось', 'сніданок'] },
-    { name: 'Гречана каша', category: 'Сніданок', time: 25, ingredients: ['300 г гречки', '200 г печериць', '1 цибулина', '50 г масла', 'Сіль'], steps: ['Обсмажити гриби з цибулею.', 'Зварити гречку.', 'Змішати з грибами.', 'Додати масло.', 'Дати настоятися.'], tags: ['каша', 'гречка', 'гриби', 'сніданок'] },
-    { name: 'Яєчня з овочами', category: 'Сніданок', time: 15, ingredients: ['4 яйця', '1 помідор', '1 болгарський перець', '50 г сиру', 'Зелень', 'Масло'], steps: ['Нарізати овочі.', 'Обсмажити на сковороді.', 'Вбити яйця.', 'Посипати тертим сиром.', 'Прикрасити зеленню.'], tags: ['яєчня', 'яйця', 'овочі', 'сніданок'] },
+// API: TheMealDB (безкоштовний, CORS-friendly)
+const MEALDB_BASE = 'https://www.themealdb.com/api/json/v1/1';
 
-    // ОБІДИ
-    { name: 'Борщ український', category: 'Обід', time: 90, ingredients: ['500 г яловичини', '3 буряки', '3 картоплини', '1 морква', '1 цибулина', '200 г капусти', '2 ст.л. томатної пасти', '3 зубчики часнику', 'Лавровий лист', 'Сметана', 'Кріп', 'Сіль, перець'], steps: ['Зварити бульйон з яловичини протягом 1 години.', 'Натерти буряк, обсмажити з томатною пастою.', 'Нарізати картоплю кубиками та капусту соломкою.', 'Додати картоплю в бульйон, через 10 хвилин — капусту.', 'Додати обсмажений буряк.', 'Варити ще 15 хвилин.', 'Додати подрібнений часник та лавровий лист.', 'Дати настоятися 20 хвилин. Подавати зі сметаною та кропом.'], tags: ['борщ', 'суп', 'обід'] },
-    { name: 'Курячий суп з локшиною', category: 'Обід', time: 50, ingredients: ['500 г курки', '2 картоплини', '1 морква', '1 цибулина', '100 г локшини', 'Кріп', 'Сіль'], steps: ['Зварити курку до готовності.', 'Додати нарізану картоплю.', 'Додати натерту моркву та цибулю.', 'Варити 20 хвилин.', 'Додати локшину та варити 5 хвилин.', 'Посипати подрібненим кропом.'], tags: ['суп', 'куря', 'локшина', 'обід'] },
-    { name: 'Курка запечена з картоплею', category: 'Обід', time: 60, ingredients: ['1 курка', '1 кг картоплі', '2 моркви', '1 цибулина', '2 ст.л. оливкової олії', 'Паприка', 'Розмарин', 'Сіль, перець'], steps: ['Промити курку та обсушити.', 'Нарізати картоплю часточками.', 'Нарізати моркву та цибулю.', 'Змішати овочі з олією та спеціями.', 'Викласти овочі на деко, зверху курку.', 'Запікати при 180°C 45 хвилин.'], tags: ['куря', 'картопля', 'обід'] },
-    { name: 'Котлети з курки', category: 'Обід', time: 35, ingredients: ['500 г курячого фаршу', '1 цибулина', '1 яйце', '100 г борошна', '100 г панірувальних сухарів', 'Олія', 'Сіль, перець'], steps: ['Змішати фарш з дрібно нарізаною цибулею.', 'Додати яйце, сіль та перець.', 'Сформувати котлети.', 'Обваляти в борошні, потім у сухарях.', 'Обсмажити на олії до золотистого кольору.', 'Подавати з картопляним пюре.'], tags: ['котлети', 'куря', 'обід'] },
-    { name: 'Плов козацький', category: 'Обід', time: 60, ingredients: ['700 г баранини', '400 г рису', '3 моркви', '2 цибулини', 'Часник', 'Зіра', 'Барбарис', 'Сіль'], steps: ['Нарізати м\'ясо.', 'Обсмажити з цибулею.', 'Додати моркву.', 'Додати воду та спеції.', 'Додати рис.', 'Готувати на малому вогні 20 хвилин.'], tags: ['плов', 'м\'ясо', 'рис', 'обід'] },
-    { name: 'Паста Карбонара', category: 'Обід', time: 25, ingredients: ['300 г спагетті', '200 г бекону', '3 яйця', '100 г пармезану', 'Чорний перець', 'Сіль'], steps: ['Зварити пасту в підсоленій воді.', 'Нарізати бекон соломкою та обсмажити.', 'Змішати яйця з тертим пармезаном.', 'Змішати гарячу пасту з беконом.', 'Додати яєчну суміш, швидко перемішати.', 'Подавати з перцем та додатковим сиром.'], tags: ['паста', 'карбонара', 'обід'] },
-    { name: 'Гречка з грибами', category: 'Обід', time: 25, ingredients: ['300 г гречки', '200 г печериць', '1 цибулина', '50 г масла', 'Сіль'], steps: ['Обсмажити гриби з цибулею.', 'Зварити гречку.', 'Змішати з грибами.', 'Додати масло.', 'Дати настоятися.'], tags: ['гречка', 'гриби', 'обід'] },
-    { name: 'Холодний свекольник', category: 'Обід', time: 30, ingredients: ['3 буряки', '2 огірки', '3 яйця', '500 мл кефіру', 'Кріп', 'Сіль'], steps: ['Зварити буряк.', 'Натерти на тертці.', 'Нарізати огірки.', 'Змішати з кефіром.', 'Додати яйця та кріп.', 'Охолодити.'], tags: ['свекольник', 'суп', 'обід'] },
-    { name: 'Вінегрет', category: 'Обід', time: 40, ingredients: ['3 буряки', '3 картоплини', '2 моркви', '200 г квашеної капусти', '3 огірки', 'Олія'], steps: ['Зварити овочі.', 'Нарізати кубиками.', 'Додати капусту та огірки.', 'Заправити олією.'], tags: ['вінегрет', 'салат', 'обід'] },
-    { name: 'Салат Олів\'є', category: 'Обід', time: 40, ingredients: ['400 г вареної ковбаси', '5 картоплин', '3 моркви', '4 яйця', '300 г горошку', '3 огірки', 'Майонез', 'Сіль'], steps: ['Зварити картоплю, моркву та яйця.', 'Нарізати ковбасу та огірки кубиками.', 'Нарізати яйця та овочі кубиками.', 'Додати консервований горошок.', 'Заправити майонезом.', 'Поставити в холодильник на 1 годину.'], tags: ['олів\'є', 'салат', 'обід'] },
-
-    // ВЕЧЕРІ
-    { name: 'Піца Маргарита', category: 'Вечеря', time: 40, ingredients: ['300 г борошна', '200 мл води', '7 г дріжджів', '200 г моцарели', '3 помідори', 'Базилік', 'Оливкова олія', 'Сіль'], steps: ['Замісити тісто з борошна, води та дріжджів.', 'Дати тісту підійти 1 годину.', 'Розкачати корж.', 'Нарізати помідори та моцарелу.', 'Викласти начинку на корж.', 'Випікати при 200°C 15-20 хвилин.', 'Прикрасити базиліком.'], tags: ['піца', 'маргарита', 'вечеря'] },
-    { name: 'Бургер домашній', category: 'Вечеря', time: 30, ingredients: ['500 г яловичого фаршу', '4 булочки', '4 листки салату', '2 помідори', '4 скибочки сиру', 'Кетчуп', 'Гірчиця', 'Сіль, перець'], steps: ['Сформувати котлети з фаршу.', 'Обсмажити на грилі або сковороді.', 'Підсмажити булочки.', 'Намазати кетчуп та гірчицю.', 'Викласти котлету, сир, салат, помідор.', 'Накрити верхньою булочкою.'], tags: ['бургер', 'м\'ясо', 'вечеря'] },
-    { name: 'Запечена риба', category: 'Вечеря', time: 35, ingredients: ['1 риба (форель/лосось)', '1 лимон', 'Оливкова олія', 'Розмарин', 'Часник', 'Сіль, перець'], steps: ['Промити рибу.', 'Натерти сіллю та перцем.', 'Покласти лимонні скибочки всередину.', 'Полити олією та додати розмарин.', 'Запікати при 180°C 20-25 хвилин.'], tags: ['риба', 'форель', 'лосось', 'вечеря'] },
-    { name: 'Сирна запіканка', category: 'Вечеря', time: 40, ingredients: ['500 г сиру', '3 яйця', '100 г цукру', '100 г манки', '100 г сметани', '50 г родзинок', 'Ванілін'], steps: ['Протерти сир через сито.', 'Додати яйця, цукор, манку та ванілін.', 'Вимішати тісто, додати родзинки.', 'Змастити форму маслом.', 'Вилити тісто.', 'Випікати при 180°C 40-45 хвилин.', 'Подавати охолодженою зі сметаною.'], tags: ['запіканка', 'сир', 'вечеря'] },
-    { name: 'Том Ям', category: 'Вечеря', time: 30, ingredients: ['300 г креветок', '200 г грибів', '1 помідор', '100 мл кокосового молока', 'Лемонграс', 'Імбир', 'Паста том Ям', 'Кінза'], steps: ['Зварити бульйон з лемонграсом та імбиром.', 'Додати пасту том Ям.', 'Додати гриби та помідори.', 'Додати креветки.', 'Влити кокосове молоко.', 'Подавати з кінзою.'], tags: ['том ям', 'креветки', 'суп', 'вечеря'] },
-
-    // СВЯТКОВІ
-    { name: 'Холодець', category: 'Святкова страва', time: 180, ingredients: ['1 кг свинячих ніг', '500 г яловичини', '2 цибулини', '1 морква', 'Часник', 'Лавровий лист', 'Перець'], steps: ['Зварити м\'ясо 3 години.', 'Процідити бульйон.', 'Нарізати м\'ясо.', 'Розлити по формах.', 'Застудити 6 годин.'], tags: ['холодець', 'свято'] },
-    { name: 'Торт Наполеон', category: 'Святкова страва', time: 90, ingredients: ['500 г борошна', '300 г масла', '200 мл молока', '3 яйця', '1 л молока для крему', '300 г цукру', 'Ванілін'], steps: ['Спечи коржі з тіста з маслом.', 'Приготувати заварний крем.', 'Промазати кожен корж.', 'Зібрати торт.', 'Посипати крихтою з коржів.', 'Охолодити 4 години.'], tags: ['торт', 'наполеон', 'свято'] },
-    { name: 'Олів\'є святковий', category: 'Святкова страва', time: 45, ingredients: ['500 г вареної ковбаси', '6 картоплин', '4 моркви', '5 яєць', '400 г горошку', '4 огірки', 'Майонез', 'Сіль'], steps: ['Зварити овочі та яйця.', 'Нарізати все кубиками.', 'Додати горошок.', 'Заправити майонезом.', 'Дати настоятися 1 годину.'], tags: ['олів\'є', 'салат', 'свято'] },
-
-    // ДЕСЕРТИ
-    { name: 'Шоколадний торт', category: 'Святкова страва', time: 60, ingredients: ['200 г борошна', '200 г цукру', '100 г какао', '3 яйця', '200 мл молока', '100 мл олії', '10 г розпушувача', '300 г вершкового масла', '200 г цукрової пудри'], steps: ['Змішати сухі інгредієнти.', 'Додати яйця, молоко, олію.', 'Випекти 2 коржі при 180°C 25 хвилин.', 'Збити масло з цукровою пудрою.', 'Промазати коржі кремом.', 'Прикрасити шоколадом.'], tags: ['торт', 'шоколад', 'десерт'] },
-    { name: 'Яблучний пиріг', category: 'Святкова страва', time: 50, ingredients: ['500 г борошна', '250 г масла', '100 г цукру', '1 яйце', '1 кг яблук', '2 ст.л. кориці', '100 г родзинок'], steps: ['Замісити тісто з борошна, масла, цукру та яйця.', 'Розділити на 2 частини.', 'Розкачати нижній корж.', 'Нарізати яблука, змішати з корицею.', 'Викласти начинку з родзинками.', 'Накрити верхнім коржем.', 'Випікати при 180°C 35-40 хвилин.'], tags: ['пиріг', 'яблуко', 'десерт'] },
-    { name: 'Медовик', category: 'Святкова страва', time: 60, ingredients: ['100 г меду', '100 г цукру', '100 г масла', '3 яйця', '500 г борошна', '1 ч.л. соди', '400 г сметани'], steps: ['Розігріти мед з цукром та маслом.', 'Додати соду, вона загасне.', 'Додати яйця та борошно.', 'Спечи 6-8 коржів.', 'Змішати сметану з цукром для крему.', 'Промазати кожен корж.', 'Настояти 8 годин.'], tags: ['медовик', 'торт', 'мед', 'десерт'] },
-    { name: 'Тірамісу', category: 'Святкова страва', time: 30, ingredients: ['500 г маскарпоне', '4 яйця', '100 г цукру', '200 г печива савоярді', '300 мл кави', 'Какао-порошок'], steps: ['Змішати жовтки з цукром.', 'Додати маскарпоне.', 'Збити білки та додати.', 'Макати печиво в каву.', 'Викладати шарами.', 'Охолодити 4 години.', 'Посипати какао.'], tags: ['тірамісу', 'десерт'] },
-    { name: 'Апельсинове морозиво', category: 'Святкова страва', time: 30, ingredients: ['4 апельсини', '200 мл вершків', '100 г цукру', '1 ст.л. лимонного соку'], steps: ['Вичавити сік з апельсинів.', 'Змішати з цукром та лимонним соком.', 'Збити вершки.', 'Обережно змішати.', 'Розлити по формах.', 'Заморозити на 4-6 годин.'], tags: ['морозиво', 'апельсин', 'десерт'] }
+// Попередньо завантажені українські страви (fallback якщо API не знайшов)
+const LOCAL_RECIPES = [
+    { name: 'Борщ український', category: 'Обід', time: 90, ingredients: ['500 г яловичини', '3 буряки', '3 картоплини', '1 морква', '1 цибулина', '200 г капусти', '2 ст.л. томатної пасти', '3 зубчики часнику', 'Лавровий лист', 'Сметана', 'Кріп', 'Сіль, перець'], steps: ['Зварити бульйон з яловичини протягом 1 години.', 'Натерти буряк, обсмажити з томатною пастою.', 'Нарізати картоплю кубиками та капусту соломкою.', 'Додати картоплю в бульйон, через 10 хвилин — капусту.', 'Додати обсмажений буряк.', 'Варити ще 15 хвилин.', 'Додати подрібнений часник та лавровий лист.', 'Дати настоятися 20 хвилин. Подавати зі сметаною та кропом.'] },
+    { name: 'Вареники', category: 'Обід', time: 60, ingredients: ['500 г борошна', '1 яйце', '200 мл води', '1 кг картоплі', '300 г печериць', '2 цибулини', 'Сіль'], steps: ['Замісити тісто.', 'Зварити та потовкти картоплю.', 'Обсмажити гриби з цибулею.', 'Сформувати вареники.', 'Зварити у підсоленій воді.'] },
+    { name: 'Голубці', category: 'Обід', time: 90, ingredients: ['1 качан капусти', '500 г фаршу', '200 г рису', '2 моркви', '2 цибулини', 'Томатний соус', 'Сіль'], steps: ['Зняти листки з капусти.', 'Змішати фарш з відвареним рисом.', 'Загорнути голубці.', 'Покласти в каструлю.', 'Залити соусом та тушкувати 1 годину.'] },
+    { name: 'Торт Спартак', category: 'Святкова страва', time: 120, ingredients: ['4 яйця', '200 г цукру', '200 г борошна', '2 ст.л. какао', '1 ч.л. соди', '400 г сметани', '300 г масла', '200 г цукрової пудри'], steps: ['Збити яйця з цукром.', 'Додати борошно та какао.', 'Розділити тісто на 8 частин.', 'Спечи тонкі коржі.', 'Збити масло з цукровою пудрою.', 'Змішати сметану з цукром для крему.', 'Промазати кожен корж.', 'Настояти 8 годин.'] },
+    { name: 'Сирна галета', category: 'Сніданок', time: 35, ingredients: ['300 г борошна', '150 г масла', '1 яйце', '400 г сиру', '100 г цукру', '100 г родзинок', 'Ванілін', 'Цукрова пудра'], steps: ['Замісити тісто з борошна, масла та яйця.', 'Розкачати та викласти у форму.', 'Змішати сир з цукром та родзинками.', 'Викласти начинку.', 'Запікати при 180°C 25 хвилин.', 'Посипати цукровою пудрою.'] },
+    { name: 'Медовик', category: 'Святкова страва', time: 60, ingredients: ['100 г меду', '100 г цукру', '100 г масла', '3 яйця', '500 г борошна', '1 ч.л. соди', '400 г сметани'], steps: ['Розігріти мед з цукром та маслом.', 'Додати соду.', 'Додати яйця та борошно.', 'Спечи 6-8 коржів.', 'Змішати сметану з цукром для крему.', 'Промазати кожен корж.', 'Настояти 8 годин.'] },
+    { name: 'Шарлотка', category: 'Святкова страва', time: 45, ingredients: ['4 яблука', '3 яйця', '1 склянка цукру', '1 склянка борошна', '1 ч.л. кориці', 'Цукрова пудра'], steps: ['Нарізати яблука.', 'Збити яйця з цукром.', 'Додати борошно та корицю.', 'Вилити тісто на яблука.', 'Випікати при 180°C 35-40 хвилин.'] }
 ];
 
-// Ініціалізація
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('recipe-search');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => searchRecipes(e.target.value));
+// ===== Пошук в TheMealDB =====
+async function searchMealDB(query) {
+    try {
+        const resp = await fetch(`${MEALDB_BASE}/search.php?s=${encodeURIComponent(query)}`);
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        if (!data.meals) return [];
+        return data.meals.map(meal => parseMealDB(meal));
+    } catch (e) {
+        console.warn('MealDB search error:', e);
+        return [];
     }
-});
+}
 
-function searchRecipes(query) {
+async function searchMealDBByCategory(category) {
+    try {
+        const resp = await fetch(`${MEALDB_BASE}/filter.php?c=${encodeURIComponent(category)}`);
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        if (!data.meals) return [];
+        return data.meals.map(meal => ({
+            id: 'mealdb-' + meal.idMeal,
+            name: meal.strMeal,
+            category: category,
+            time: 45,
+            image: meal.strMealThumb,
+            source: 'themealdb',
+            apiId: meal.idMeal
+        }));
+    } catch (e) {
+        return [];
+    }
+}
+
+async function getMealDBDetails(id) {
+    try {
+        const resp = await fetch(`${MEALDB_BASE}/lookup.php?i=${id}`);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (!data.meals || !data.meals[0]) return null;
+        return parseMealDB(data.meals[0]);
+    } catch (e) {
+        return null;
+    }
+}
+
+function parseMealDB(meal) {
+    const ingredients = [];
+    for (let i = 1; i <= 20; i++) {
+        const ing = meal[`strIngredient${i}`];
+        const measure = meal[`strMeasure${i}`];
+        if (ing && ing.trim()) {
+            ingredients.push(measure ? `${measure.trim()} ${ing.trim()}` : ing.trim());
+        }
+    }
+    const steps = meal.strInstructions
+        ? meal.strInstructions.split(/\r?\n/).filter(s => s.trim().length > 3)
+        : ['Деталі рецепта дивись на TheMealDB'];
+
+    return {
+        id: 'mealdb-' + meal.idMeal,
+        name: meal.strMeal,
+        category: meal.strCategory || 'Обід',
+        time: 45,
+        image: meal.strMealThumb,
+        ingredients,
+        steps,
+        source: 'themealdb',
+        apiId: meal.idMeal,
+        tags: meal.strTags ? meal.strTags.split(',').map(t => t.trim().toLowerCase()) : []
+    };
+}
+
+// ===== Пошук у локальній базі =====
+function searchLocal(query) {
+    const q = query.toLowerCase();
+    return LOCAL_RECIPES.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.ingredients.some(i => i.toLowerCase().includes(q))
+    ).map((r, i) => ({ ...r, id: 'local-' + i, source: 'local' }));
+}
+
+// ===== ГОЛОВНИЙ ПОШУК =====
+async function searchRecipes(query) {
     const container = document.getElementById('search-results');
     if (!container) return;
 
     if (query.length < 2) {
-        container.innerHTML = '';
+        container.innerHTML = '<p class="no-results">Почни вводити назву страви...</p>';
         return;
     }
 
-    const q = query.toLowerCase();
-    const results = RECIPES_DB.filter(r =>
-        r.name.toLowerCase().includes(q) ||
-        r.tags.some(t => t.includes(q)) ||
-        r.ingredients.some(i => i.toLowerCase().includes(q))
-    );
+    container.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Шукаю в інтернеті...</div>';
 
-    if (results.length === 0) {
-        container.innerHTML = '<p class="no-results">Нічого не знайдено. Спробуйте інший запит.</p>';
-        return;
-    }
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+        // 1. Шукаємо в TheMealDB
+        const mealdbResults = await searchMealDB(query);
 
-    container.innerHTML = results.map((r, i) => `
-        <div class="search-result-card" onclick="showRecipe(${RECIPES_DB.indexOf(r)})">
-            <h4>${r.name}</h4>
-            <div class="search-result-meta">
-                <span class="note-tag">${r.category}</span>
-                <span class="note-time">⏱ ${r.time} хв</span>
+        // 2. Шукаємо локально
+        const localResults = searchLocal(query);
+
+        // 3. Об'єднуємо
+        const allResults = [...mealdbResults, ...localResults];
+
+        if (allResults.length === 0) {
+            container.innerHTML = `
+                <div class="no-results-found">
+                    <p>😕 Нічого не знайдено за запитом «${query}»</p>
+                    <p class="no-results-hint">Спробуй іншу назву або скористайся пошуком Google:</p>
+                    <a href="https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт українською')}" target="_blank" class="google-search-btn">🔍 Шукати в Google</a>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = allResults.map(r => `
+            <div class="search-result-card" onclick="showRecipe('${r.id}')">
+                ${r.image ? `<img src="${r.image}" class="search-result-img" alt="${r.name}">` : ''}
+                <div class="search-result-info">
+                    <h4>${r.name}</h4>
+                    <div class="search-result-meta">
+                        <span class="note-tag">${r.category || ''}</span>
+                        <span class="note-time">⏱ ${r.time} хв</span>
+                        <span class="source-badge">${r.source === 'themealdb' ? '🌐 Інтернет' : '📚 Наша база'}</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    }, 400);
 }
 
-function showRecipe(index) {
-    const recipe = RECIPES_DB[index];
-    if (!recipe) return;
+// ===== ПОКАЗАТИ ДЕТАЛІ РЕЦЕПТА =====
+async function showRecipe(id) {
+    const container = document.getElementById('search-container');
+    const view = document.getElementById('recipe-view');
+    if (!container || !view) return;
+
+    container.classList.add('hidden');
+    view.classList.remove('hidden');
+
+    view.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Завантажую рецепт...</div>';
+
+    let recipe = null;
+
+    if (id.startsWith('mealdb-')) {
+        const apiId = id.replace('mealdb-', '');
+        recipe = await getMealDBDetails(apiId);
+    } else if (id.startsWith('local-')) {
+        const index = parseInt(id.replace('local-', ''));
+        recipe = LOCAL_RECIPES[index] ? { ...LOCAL_RECIPES[index], id, source: 'local' } : null;
+    }
+
+    if (!recipe) {
+        view.innerHTML = '<p>Рецепт не знайдено.</p><button class="back-btn" onclick="backToSearch()">← Назад</button>';
+        return;
+    }
 
     currentScannedRecipe = recipe;
 
-    document.getElementById('search-container').classList.add('hidden');
-    document.getElementById('recipe-view').classList.remove('hidden');
+    const emojis = { 'Сніданок': '🌅', 'Обід': '☀️', 'Вечеря': '🌙', 'Святкова страва': '🎉', 'Dessert': '🍰', 'Side': '🥗', 'Pasta': '🍝', 'Seafood': '🐟', 'Chicken': '🍗', 'Beef': '🥩', 'Pork': '🥓', 'Breakfast': '🌅', 'Goat': '🐐', 'Lamb': '🐑', 'Miscellaneous': '🍽️', 'Starter': '🥗', 'Vegan': '🌱', 'Vegetarian': '🥬' };
+    const catEmoji = emojis[recipe.category] || '🍽️';
+    const sourceBadge = recipe.source === 'themealdb' ? '<span class="source-badge inline">🌐 Рецепт з інтернету</span>' : '';
 
-    const emojis = { 'Сніданок': '🌅', 'Обід': '☀️', 'Вечеря': '🌙', 'Святкова страва': '🎉' };
-    document.getElementById('recipe-emoji').textContent = emojis[recipe.category] || '🍽️';
-    document.getElementById('recipe-name').textContent = recipe.name;
-    document.getElementById('recipe-meta').innerHTML = `<span class="note-tag">${recipe.category}</span><span class="note-time">⏱ ${recipe.time} хв</span>`;
-    document.getElementById('recipe-ingredients').innerHTML = recipe.ingredients.map(i => `<li>${i}</li>`).join('');
-    document.getElementById('recipe-steps').innerHTML = recipe.steps.map(s => `<li>${s}</li>`).join('');
+    view.innerHTML = `
+        <button class="back-btn" onclick="backToSearch()">← Назад до пошуку</button>
+        ${recipe.image ? `<img src="${recipe.image}" class="recipe-hero-img" alt="${recipe.name}">` : ''}
+        <div class="recipe-view-header">
+            <span class="scanned-emoji">${catEmoji}</span>
+            <div>
+                <h3>${recipe.name}</h3>
+                ${sourceBadge}
+            </div>
+        </div>
+        <div class="scanned-meta">
+            <span class="note-tag">${recipe.category}</span>
+            <span class="note-time">⏱ ${recipe.time} хв</span>
+        </div>
+        <div class="scanned-section">
+            <h4>Інгредієнти (${recipe.ingredients.length})</h4>
+            <ul id="recipe-ingredients">${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>
+        <div class="scanned-section">
+            <h4>Кроки приготування</h4>
+            <ol id="recipe-steps">${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+        </div>
+        <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>
+    `;
 }
 
 function backToSearch() {
@@ -109,6 +212,7 @@ function backToSearch() {
     currentScannedRecipe = null;
 }
 
+// ===== ЗБЕРЕЖЕННЯ =====
 function showCategoryPicker() {
     if (!currentScannedRecipe) return;
     let modal = document.getElementById('category-modal');
@@ -151,6 +255,7 @@ function confirmSave(category) {
         time: currentScannedRecipe.time,
         ingredients: Array.isArray(currentScannedRecipe.ingredients) ? currentScannedRecipe.ingredients.join('\n') : currentScannedRecipe.ingredients,
         steps: Array.isArray(currentScannedRecipe.steps) ? currentScannedRecipe.steps.join('\n') : currentScannedRecipe.steps,
+        image: currentScannedRecipe.image || '',
         createdAt: new Date().toISOString()
     });
     localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
