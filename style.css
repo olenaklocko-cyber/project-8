@@ -121,8 +121,10 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 .recipe-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
 
 .recipe-card-image {
-    width: 100%; height: 160px; object-fit: cover;
+    width: 100%; height: 160px;
     background: linear-gradient(135deg, #FFE0CC, #FFD0B5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px;
 }
 
 .recipe-card-body { padding: 16px; }

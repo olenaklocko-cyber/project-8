@@ -321,7 +321,7 @@ function renderCatalog() {
 
     grid.innerHTML = filtered.map(r => `
         <div class="recipe-card" onclick="openRecipe(${r.id})">
-            <div class="recipe-card-image" style="display:flex;align-items:center;justify-content:center;font-size:60px;">
+            <div class="recipe-card-image">
                 ${r.emoji}
             </div>
             <div class="recipe-card-body">
