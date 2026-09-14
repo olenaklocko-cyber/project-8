@@ -151,7 +151,7 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 .holiday-info { flex: 1; }
 .holiday-info h3 { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
 .holiday-info p { font-size: 13px; color: #888; margin: 0; }
-.holiday-arrow { font-size: 20px; color: #ccc; }
+.holiday-arrow { font-size: 20px; color: #ccc; margin-left: auto; }
 
 /* AI-СКАНЕР */
 .scanner-container { max-width: 500px; margin: 0 auto; }
@@ -568,23 +568,24 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
         flex: 0 0 auto;
     }
 
-    /* Свята: компактні горизонтальні плашки */
+    /* Свята: квадратні картки як рецепти */
     .holidays-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
     .holiday-card {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
+        text-align: center;
+        padding: 10px 6px;
         border-radius: 12px;
+        gap: 4px;
     }
-    .holiday-emoji { font-size: 28px; min-width: 36px; }
-    .holiday-info { flex: 1; }
-    .holiday-info h3 { font-size: 14px; margin: 0 0 2px; }
-    .holiday-info p { font-size: 11px; color: #888; margin: 0; }
-    .holiday-arrow { font-size: 14px; color: #ccc; }
+    .holiday-emoji { font-size: 32px; }
+    .holiday-info h3 { font-size: 11px; line-height: 1.2; margin: 2px 0 0; }
+    .holiday-info p { font-size: 9px; color: #888; margin: 0; }
+    .holiday-arrow { display: none; }
 
     .scanner-result { padding: 20px; }
     .scanned-emoji { font-size: 36px; }
@@ -611,9 +612,11 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 
 @media (max-width: 400px) {
     .tab-btn { font-size: 11px; padding: 7px 8px; }
-    .catalog-grid { grid-template-columns: repeat(2, 1fr); }
+    .catalog-grid, .holidays-grid { grid-template-columns: repeat(2, 1fr); }
     .filter-btn { font-size: 11px; padding: 5px 10px; }
     .recipe-card-image { height: 70px; font-size: 34px !important; }
     .recipe-card-body { padding: 6px; }
     .recipe-card-title { font-size: 11px; }
+    .holiday-emoji { font-size: 26px; }
+    .holiday-info h3 { font-size: 10px; }
 }
