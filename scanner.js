@@ -108,22 +108,6 @@ function searchLocal(q) {
     return results;
 }
 
-async function searchMealDB(q) {
-    try {
-        const resp = await fetch(`${MEALDB}/search.php?s=${encodeURIComponent(q)}`);
-        const data = await resp.json();
-        if (!data.meals) return [];
-        return data.meals.map(m => {
-            const ings = [];
-            for (let j = 1; j <= 20; j++) {
-                const ing = m[`strIngredient${j}`]; const meas = m[`strMeasure${j}`];
-                if (ing && ing.trim()) ings.push(meas ? `${meas.trim()} ${ing.trim()}` : ing.trim());
-            }
-            return { id: 'mealdb-' + m.idMeal, name: m.strMeal, category: m.strCategory || '', time: 45, image: m.strMealThumb, ingredients: ings, steps: m.strInstructions ? m.strInstructions.split(/\r?\n/).filter(s => s.trim().length > 3) : [], source: 'themealdb' };
-        });
-    } catch(e) { return []; }
-}
-
 async function searchRecipes(query) {
     const container = document.getElementById('search-results');
     if (!container) return;
@@ -132,22 +116,23 @@ async function searchRecipes(query) {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
         const local = searchLocal(query);
-        const mealdb = await searchMealDB(query);
-        const all = [...local, ...mealdb];
-        if (all.length === 0) {
-            container.innerHTML = `<div class="no-results-found"><p>😕 Нічого не знайдено</p><a href="https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт українською')}" target="_blank" class="google-search-btn">🔍 Шукати в Google</a></div>`;
-            return;
+        if (local.length > 0) {
+            container.innerHTML = local.map(r => `
+                <div class="search-result-card" onclick="showRecipe('${r.id}')">
+                    <div class="search-result-info"><h4>${r.name}</h4>
+                    <div class="search-result-meta">
+                        <span class="note-tag">${r.category || ''}</span>
+                        <span class="note-time">⏱ ${r.time} хв</span>
+                    </div></div></div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="no-results-found">
+                    <p>😕 Рецепт «${query}» не знайдено в нашій базі</p>
+                    <p class="no-results-hint">Але можна знайти в інтернеті:</p>
+                    <a href="https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт українською мовою')}" target="_blank" class="google-search-btn">🔍 Знайти рецепт в Google</a>
+                </div>`;
         }
-        container.innerHTML = all.map(r => `
-            <div class="search-result-card" onclick="showRecipe('${r.id}')">
-                ${r.image ? `<img src="${r.image}" class="search-result-img">` : ''}
-                <div class="search-result-info"><h4>${r.name}</h4>
-                <div class="search-result-meta">
-                    <span class="note-tag">${r.category || ''}</span>
-                    <span class="note-time">⏱ ${r.time} хв</span>
-                    <span class="source-badge">${r.source === 'themealdb' ? '🌐 Інтернет' : '📚 Наша база'}</span>
-                </div></div></div>
-        `).join('');
     }, 400);
 }
 
@@ -158,43 +143,21 @@ async function showRecipe(id) {
     if (!container || !view) return;
     container.classList.add('hidden');
     view.classList.remove('hidden');
-    view.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Завантажую...</div>';
 
     let recipe = null;
-
-    // 1. Локальний рецепт
     if (id.startsWith('local-')) {
         const idx = parseInt(id.replace('local-', ''));
         if (LOCAL[idx]) recipe = toFull(LOCAL[idx], idx);
     }
-
-    // 2. TheMealDB — деталі
-    if (!recipe && id.startsWith('mealdb-')) {
-        try {
-            const resp = await fetch(`${MEALDB}/lookup.php?i=${id.replace('mealdb-', '')}`);
-            const d = await resp.json();
-            if (d.meals && d.meals[0]) {
-                const m = d.meals[0];
-                const ings = [];
-                for (let j = 1; j <= 20; j++) {
-                    const ing = m[`strIngredient${j}`]; const meas = m[`strMeasure${j}`];
-                    if (ing && ing.trim()) ings.push(meas ? `${meas.trim()} ${ing.trim()}` : ing.trim());
-                }
-                recipe = { id, name: m.strMeal, category: m.strCategory || '', time: 45, image: m.strMealThumb, ingredients: ings, steps: m.strInstructions ? m.strInstructions.split(/\r?\n/).filter(s => s.trim().length > 3) : [], source: 'themealdb' };
-            }
-        } catch(e) {}
-    }
-
     if (!recipe) { view.innerHTML = '<p>Не знайдено</p><button class="back-btn" onclick="backToSearch()">← Назад</button>'; return; }
 
     currentScannedRecipe = recipe;
-    const emojis = { 'Сніданок': '🌅', 'Обід': '☀️', 'Вечеря': '🌙', 'Святкова страва': '🎉', 'Dessert': '🍰', 'Pasta': '🍝', 'Seafood': '🐟', 'Chicken': '🍗', 'Beef': '🥩', 'Vegan': '🌱', 'Vegetarian': '🥬' };
+    const emojis = { 'Сніданок': '🌅', 'Обід': '☀️', 'Вечеря': '🌙', 'Святкова страва': '🎉' };
     view.innerHTML = `
         <button class="back-btn" onclick="backToSearch()">← Назад до пошуку</button>
-        ${recipe.image ? `<img src="${recipe.image}" class="recipe-hero-img">` : ''}
         <div class="recipe-view-header">
             <span class="scanned-emoji">${emojis[recipe.category] || '🍽️'}</span>
-            <div><h3>${recipe.name}</h3>${recipe.source === 'themealdb' ? '<span class="source-badge inline">🌐 З інтернету</span>' : ''}</div>
+            <div><h3>${recipe.name}</h3></div>
         </div>
         <div class="scanned-meta"><span class="note-tag">${recipe.category}</span><span class="note-time">⏱ ${recipe.time} хв</span></div>
         <div class="scanned-section"><h4>Інгредієнти (${recipe.ingredients.length})</h4><ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul></div>
