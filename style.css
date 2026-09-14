@@ -103,9 +103,12 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 .search-box input:focus { outline: none; border-color: #FF6B35; }
 
 /* СІТКА РЕЦЕПТІВ */
-.recipes-grid, .holidays-grid, .notes-grid {
+.recipes-grid, .notes-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
+}
+.holidays-grid {
+    display: grid; grid-template-columns: 1fr; gap: 10px;
 }
 
 /* КАРТОЧКА РЕЦЕПТА */
@@ -136,15 +139,17 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 
 /* СВЯТКОВІ ЗАСТІЛЛЯ */
 .holiday-card {
-    background: white; border-radius: 16px; padding: 24px;
+    background: white; border-radius: 16px; padding: 20px 24px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    text-align: center; cursor: pointer;
-    transition: transform 0.3s ease;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: transform 0.3s ease;
 }
-.holiday-card:hover { transform: translateY(-5px); }
-.holiday-icon { font-size: 50px; margin-bottom: 12px; }
-.holiday-title { font-size: 20px; font-weight: 700; }
-.holiday-subtitle { font-size: 14px; color: #888; margin-top: 6px; }
+.holiday-card:hover { transform: translateY(-3px); }
+.holiday-emoji { font-size: 36px; }
+.holiday-info { flex: 1; }
+.holiday-info h3 { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+.holiday-info p { font-size: 13px; color: #888; margin: 0; }
+.holiday-arrow { font-size: 20px; color: #ccc; }
 
 /* AI-СКАНЕР */
 .scanner-container { max-width: 500px; margin: 0 auto; }
@@ -529,12 +534,55 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
     .tab-btn { font-size: 13px; padding: 10px 14px; min-width: 0; flex: 1 1 45%; }
     .tab-btn.active::after { display: none; }
 
-    .upload-area { padding: 40px 20px; min-height: 200px; }
-    .upload-icon { font-size: 56px; }
-    .upload-text-main { font-size: 16px; }
-    .upload-text-sub { font-size: 13px; color: #999; margin-bottom: 16px; }
-    .upload-buttons { flex-direction: column; }
-    .upload-btn { width: 100%; padding: 16px; font-size: 17px; }
+    /* Каталог: 3 колонки, компактні картки */
+    .catalog-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .recipe-card { margin-bottom: 0; border-radius: 12px; }
+    .recipe-card-image { height: 80px; font-size: 40px !important; }
+    .recipe-card-body { padding: 8px; }
+    .recipe-card-title { font-size: 12px; line-height: 1.2; margin-bottom: 4px; }
+    .recipe-card-meta { font-size: 10px; color: #888; }
+    .recipe-card-tag { font-size: 9px; padding: 2px 6px; border-radius: 6px; }
+
+    /* Фільтри: горизонтальний скрол chips */
+    .category-filters {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 0 0 8px 0;
+        flex-wrap: nowrap;
+    }
+    .category-filters::-webkit-scrollbar { display: none; }
+    .filter-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        white-space: nowrap;
+        min-width: 0;
+        flex: 0 0 auto;
+    }
+
+    /* Свята: компактні горизонтальні плашки */
+    .holidays-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .holiday-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+    }
+    .holiday-emoji { font-size: 28px; min-width: 36px; }
+    .holiday-info { flex: 1; }
+    .holiday-info h3 { font-size: 14px; margin: 0 0 2px; }
+    .holiday-info p { font-size: 11px; color: #888; margin: 0; }
+    .holiday-arrow { font-size: 14px; color: #ccc; }
 
     .scanner-result { padding: 20px; }
     .scanned-emoji { font-size: 36px; }
@@ -543,23 +591,27 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
     .preview-actions { flex-direction: column; }
     .preview-actions .btn-primary, .preview-actions .btn-secondary { width: 100%; }
 
-    .notes-grid { grid-template-columns: 1fr; }
+    .notes-grid { grid-template-columns: 1fr; gap: 10px; }
+    .note-card { padding: 14px; }
+    .note-card-name { font-size: 15px; }
     .note-form-row { flex-direction: column; gap: 0; }
     .note-form-col { width: 100%; }
-
-    .catalog-grid { grid-template-columns: 1fr; }
-    .holidays-grid { grid-template-columns: 1fr; }
 
     .modal-content { width: 95%; max-height: 90vh; padding: 20px; }
     .modal-header h2 { font-size: 20px; }
 
-    .holiday-card { padding: 20px; }
+    .section-header h2 { font-size: 20px; }
+    .section-header p { font-size: 13px; }
 
-    .section-header h2 { font-size: 24px; }
-    .section-header p { font-size: 14px; }
+    .search-container input { font-size: 16px; padding: 14px 16px; }
+    .recipe-view-header h3 { font-size: 18px; }
 }
 
 @media (max-width: 400px) {
-    .tab-btn { font-size: 12px; padding: 8px 10px; }
-    .upload-area { padding: 30px 15px; }
+    .tab-btn { font-size: 11px; padding: 7px 8px; }
+    .catalog-grid { grid-template-columns: repeat(2, 1fr); }
+    .filter-btn { font-size: 11px; padding: 5px 10px; }
+    .recipe-card-image { height: 70px; font-size: 34px !important; }
+    .recipe-card-body { padding: 6px; }
+    .recipe-card-title { font-size: 11px; }
 }

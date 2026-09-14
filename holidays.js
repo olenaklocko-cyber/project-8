@@ -399,9 +399,12 @@ function renderHolidays() {
     const grid = document.getElementById('holidays-grid');
     grid.innerHTML = holidayMenus.map(h => `
         <div class="holiday-card" onclick="openHolidayMenu(${h.id})">
-            <div class="holiday-icon">${h.icon}</div>
-            <div class="holiday-title">${h.name}</div>
-            <div class="holiday-subtitle">${h.dishes.appetizers.length + h.dishes.salads.length + h.dishes.main.length + h.dishes.desserts.length} страв</div>
+            <span class="holiday-emoji">${h.icon}</span>
+            <div class="holiday-info">
+                <h3>${h.name}</h3>
+                <p>${h.dishes.appetizers.length + h.dishes.salads.length + h.dishes.main.length + h.dishes.desserts.length} страв</p>
+            </div>
+            <span class="holiday-arrow">›</span>
         </div>
     `).join('');
 }
