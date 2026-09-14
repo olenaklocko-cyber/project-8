@@ -131,7 +131,8 @@ function renderNotesGrid() {
         'Сніданок': '🌅',
         'Обід': '☀️',
         'Вечеря': '🌙',
-        'Святкова страва': '🎉'
+        'Святкова страва': '🎉',
+        'Мої улюблені рецепти': '❤️'
     };
 
     grid.innerHTML = userNotes.map((note, i) => `
@@ -162,7 +163,8 @@ function viewNote(index) {
         'Сніданок': '🌅',
         'Обід': '☀️',
         'Вечеря': '🌙',
-        'Святкова страва': '🎉'
+        'Святкова страва': '🎉',
+        'Мої улюблені рецепти': '❤️'
     };
 
     const ingredientsList = note.ingredients.split('\n').filter(i => i.trim());
