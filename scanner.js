@@ -172,39 +172,22 @@ function backToSearch() {
 }
 
 // ===== ЗБЕРЕЖЕННЯ =====
-function showCategoryPicker() {
-    if (!currentScannedRecipe) return;
-    let modal = document.getElementById('category-modal');
-    if (!modal) {
-        modal = document.createElement('div'); modal.id = 'category-modal'; modal.className = 'modal-overlay';
-        modal.innerHTML = `<div class="modal-content category-picker"><h3>Куди зберегти?</h3>
-            <p class="picker-recipe-name" id="picker-recipe-name"></p>
-            <div class="category-options">
-                <button class="cat-btn" onclick="confirmSave('Сніданок')">🌅 Сніданок</button>
-                <button class="cat-btn" onclick="confirmSave('Обід')">☀️ Обід</button>
-                <button class="cat-btn" onclick="confirmSave('Вечеря')">🌙 Вечеря</button>
-                <button class="cat-btn" onclick="confirmSave('Святкова страва')">🎉 Святкова страва</button>
-            </div>
-            <button class="btn-secondary" onclick="closeCategoryPicker()" style="margin-top:12px;width:100%">Скасувати</button></div>`;
-        document.body.appendChild(modal);
-    }
-    document.getElementById('picker-recipe-name').textContent = currentScannedRecipe.name;
-    modal.classList.add('active');
-}
-function closeCategoryPicker() { const m = document.getElementById('category-modal'); if (m) m.classList.remove('active'); }
-function confirmSave(category) {
+function saveToNotes() {
     if (!currentScannedRecipe) return;
     let notes = []; try { const s = localStorage.getItem('smartcookbook_notes'); if (s) notes = JSON.parse(s); } catch(e) {}
-    notes.unshift({ id: Date.now(), name: currentScannedRecipe.name, category, time: currentScannedRecipe.time,
+    notes.unshift({
+        id: Date.now(),
+        name: currentScannedRecipe.name,
+        category: 'Мої улюблені рецепти',
+        time: currentScannedRecipe.time,
         ingredients: Array.isArray(currentScannedRecipe.ingredients) ? currentScannedRecipe.ingredients.join('\n') : currentScannedRecipe.ingredients,
         steps: Array.isArray(currentScannedRecipe.steps) ? currentScannedRecipe.steps.join('\n') : currentScannedRecipe.steps,
-        image: currentScannedRecipe.image || '', createdAt: new Date().toISOString() });
+        image: currentScannedRecipe.image || '',
+        createdAt: new Date().toISOString()
+    });
     localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
-    closeCategoryPicker();
-    // Показати повідомлення про збереження
     const view = document.getElementById('recipe-view');
     if (view) {
-        view.innerHTML = '<div class="save-success"><span class="save-success-icon">✅</span><h3>Збережено в «' + category + '»!</h3><button class="btn-primary" onclick="backToSearch()" style="margin-top:16px">← Повернутися до пошуку</button></div>';
+        view.innerHTML = '<div class="save-success"><span class="save-success-icon">❤️</span><h3>Додано в «Мої улюблені рецепти»!</h3><p style="color:#666;margin:8px 0 20px">Рецепт збережено у Блокноті</p><button class="btn-primary" onclick="backToSearch()">← Повернутися до пошуку</button></div>';
     }
 }
-function saveToNotes() { showCategoryPicker(); }
