@@ -201,8 +201,10 @@ function confirmSave(category) {
         image: currentScannedRecipe.image || '', createdAt: new Date().toISOString() });
     localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
     closeCategoryPicker();
-    const btn = document.querySelector('.save-to-notes-btn');
-    if (btn) { btn.textContent = '✅ Збережено!'; btn.style.background = '#2D5016'; btn.disabled = true;
-        setTimeout(() => { btn.textContent = '💾 Зберегти в Мій Блокнот'; btn.style.background = ''; btn.disabled = false; }, 2000); }
+    // Показати повідомлення про збереження
+    const view = document.getElementById('recipe-view');
+    if (view) {
+        view.innerHTML = '<div class="save-success"><span class="save-success-icon">✅</span><h3>Збережено в «' + category + '»!</h3><button class="btn-primary" onclick="backToSearch()" style="margin-top:16px">← Повернутися до пошуку</button></div>';
+    }
 }
 function saveToNotes() { showCategoryPicker(); }

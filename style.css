@@ -530,6 +530,10 @@ header .subtitle { font-size: 18px; color: #888; margin-top: 8px; }
 }
 .google-search-btn:hover { background: #3367D6; }
 
+.save-success { text-align: center; padding: 40px 20px; }
+.save-success-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+.save-success h3 { font-size: 18px; color: #2D5016; margin: 0 0 8px; }
+
 /* МОБІЛЬНА АДАПТАЦІЯ */
 @media (max-width: 768px) {
     .tab-nav { flex-wrap: wrap; }
