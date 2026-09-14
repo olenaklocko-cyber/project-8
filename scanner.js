@@ -2,9 +2,8 @@
 let currentScannedRecipe = null;
 let searchTimeout = null;
 const MEALDB = 'https://www.themealdb.com/api/json/v1/1';
-const API = 'https://recipe-search-api.vercel.app';
 
-// 80+ українських рецептів
+// 76 українських рецептів (ключі: n=назва, c=категорія, t=час, i=інгредієнти, s=кроки)
 const LOCAL=[
 {n:'Торт Спартак',c:'Святкова страва',t:120,i:['4 яйця','200 г цукру','200 г борошна','2 ст.л. какао','400 г сметани','300 г масла'],s:['Збити яйця з цукром','Додати борошно та какао','Спечи 8 коржів','Збити масло з пудрою','Змішати сметану з цукром','Промазати кожен корж','Настояти 8 годин']},
 {n:'Торт Наполеон',c:'Святкова страва',t:90,i:['500 г борошна','300 г масла','3 яйця','1 л молока','300 г цукру'],s:['Спечи коржі','Зварити крем','Промазати коржі','Охолодити']},
@@ -91,15 +90,20 @@ const LOCAL=[
 {n:'Суп-пюре з грибами',c:'Обід',t:35,i:['300 г грибів','200 мл вершків'],s:['Обсмажити гриби','Зварити','Збити блендером']},
 {n:'Брускета',c:'Обід',t:10,i:['Хліб','Помідори','Базилік'],s:['Підсмажити хліб','Нарізати помідори']},
 {n:'Фахітас',c:'Вечеря',t:25,i:['500 г курки','Перець','Тортилі'],s:['Обсмажити курку з овочами','Викласти на тортилю']},
-{n:'Картопляні зірочки',c:'Обід',t:30,i:['1 кг картоплі','1 яйце','Борошно'],s:['Зварити картоплю','Додати яйце та борошно','Сформувати зірочки','Обсмажити']},
+{n:'Картопляні зірочки',c:'Обід',t:30,i:['1 кг картоплі','1 яйце','Борошно'],s:['Зварити картоплю','Додати яйце та борошно','Сформувати','Обсмажити']},
 ];
+
+// Допоміжна функція: перетворює короткий формат в повний
+function toFull(r, idx) {
+    return { id: 'local-' + idx, name: r.n, category: r.c, time: r.t, ingredients: r.i, steps: r.s, source: 'local', image: '' };
+}
 
 // ===== ПОШУК =====
 function searchLocal(q) {
     const ql = q.toLowerCase();
     const results = [];
     LOCAL.forEach((r, idx) => {
-        if (r.n.toLowerCase().includes(ql)) results.push({ ...r, id: 'local-' + idx, source: 'local' });
+        if (r.n.toLowerCase().includes(ql)) results.push(toFull(r, idx));
     });
     return results;
 }
@@ -115,7 +119,7 @@ async function searchMealDB(q) {
                 const ing = m[`strIngredient${j}`]; const meas = m[`strMeasure${j}`];
                 if (ing && ing.trim()) ings.push(meas ? `${meas.trim()} ${ing.trim()}` : ing.trim());
             }
-            return { id: 'mealdb-' + m.idMeal, name: m.strMeal, category: m.strCategory||'', time: 45, image: m.strMealThumb, ingredients: ings, steps: m.strInstructions ? m.strInstructions.split(/\r?\n/).filter(s=>s.trim().length>3) : [], source: 'themealdb' };
+            return { id: 'mealdb-' + m.idMeal, name: m.strMeal, category: m.strCategory || '', time: 45, image: m.strMealThumb, ingredients: ings, steps: m.strInstructions ? m.strInstructions.split(/\r?\n/).filter(s => s.trim().length > 3) : [], source: 'themealdb' };
         });
     } catch(e) { return []; }
 }
@@ -127,13 +131,11 @@ async function searchRecipes(query) {
     container.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Шукаю...</div>';
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(async () => {
-        // 1. Шукаємо локально (миттєво)
         const local = searchLocal(query);
-        // 2. Шукаємо в TheMealDB (інтернет)
         const mealdb = await searchMealDB(query);
         const all = [...local, ...mealdb];
         if (all.length === 0) {
-            container.innerHTML = `<div class="no-results-found"><p>😕 Нічого не знайдено</p><a href="https://www.google.com/search?q=${encodeURIComponent(query+' рецепт українською')}" target="_blank" class="google-search-btn">🔍 Шукати в Google</a></div>`;
+            container.innerHTML = `<div class="no-results-found"><p>😕 Нічого не знайдено</p><a href="https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт українською')}" target="_blank" class="google-search-btn">🔍 Шукати в Google</a></div>`;
             return;
         }
         container.innerHTML = all.map(r => `
@@ -141,58 +143,62 @@ async function searchRecipes(query) {
                 ${r.image ? `<img src="${r.image}" class="search-result-img">` : ''}
                 <div class="search-result-info"><h4>${r.name}</h4>
                 <div class="search-result-meta">
-                    <span class="note-tag">${r.category||''}</span>
+                    <span class="note-tag">${r.category || ''}</span>
                     <span class="note-time">⏱ ${r.time} хв</span>
-                    <span class="source-badge">${r.source==='themealdb'?'🌐 Інтернет':'📚 Наша база'}</span>
+                    <span class="source-badge">${r.source === 'themealdb' ? '🌐 Інтернет' : '📚 Наша база'}</span>
                 </div></div></div>
         `).join('');
     }, 400);
 }
 
-// ===== ДЕТАЛІ =====
+// ===== ДЕТАЛІ РЕЦЕПТА =====
 async function showRecipe(id) {
     const container = document.getElementById('search-container');
     const view = document.getElementById('recipe-view');
     if (!container || !view) return;
-    container.classList.add('hidden'); view.classList.remove('hidden');
+    container.classList.add('hidden');
+    view.classList.remove('hidden');
     view.innerHTML = '<div class="search-loading"><div class="loading-spinner small"></div>Завантажую...</div>';
 
     let recipe = null;
-    // Спочатку спробувати бекенд
-    try {
-        const r = await fetch(`${API}/api/recipe?id=${id}`);
-        if (r.ok) recipe = await r.json();
-    } catch(e) {}
-    // Якщо не вдалося — локально
-    if (!recipe && id.startsWith('local-')) {
-        const idx = parseInt(id.replace('local-',''));
-        if (LOCAL[idx]) recipe = { ...LOCAL[idx], id, source:'local' };
+
+    // 1. Локальний рецепт
+    if (id.startsWith('local-')) {
+        const idx = parseInt(id.replace('local-', ''));
+        if (LOCAL[idx]) recipe = toFull(LOCAL[idx], idx);
     }
-    // Якщо TheMealDB — з API
+
+    // 2. TheMealDB — деталі
     if (!recipe && id.startsWith('mealdb-')) {
         try {
-            const r = await fetch(`${MEALDB}/lookup.php?i=${id.replace('mealdb-','')}`);
-            const d = await r.json();
+            const resp = await fetch(`${MEALDB}/lookup.php?i=${id.replace('mealdb-', '')}`);
+            const d = await resp.json();
             if (d.meals && d.meals[0]) {
                 const m = d.meals[0];
                 const ings = [];
-                for (let j=1;j<=20;j++){const ing=m[`strIngredient${j}`];const meas=m[`strMeasure${j}`];if(ing&&ing.trim())ings.push(meas?`${meas.trim()} ${ing.trim()}`:ing.trim());}
-                recipe = { id, name:m.strMeal, category:m.strCategory||'', time:45, image:m.strMealThumb, ingredients:ings, steps:m.strInstructions?m.strInstructions.split(/\r?\n/).filter(s=>s.trim().length>3):[], source:'themealdb' };
+                for (let j = 1; j <= 20; j++) {
+                    const ing = m[`strIngredient${j}`]; const meas = m[`strMeasure${j}`];
+                    if (ing && ing.trim()) ings.push(meas ? `${meas.trim()} ${ing.trim()}` : ing.trim());
+                }
+                recipe = { id, name: m.strMeal, category: m.strCategory || '', time: 45, image: m.strMealThumb, ingredients: ings, steps: m.strInstructions ? m.strInstructions.split(/\r?\n/).filter(s => s.trim().length > 3) : [], source: 'themealdb' };
             }
         } catch(e) {}
     }
-    if (!recipe) { view.innerHTML='<p>Не знайдено</p><button class="back-btn" onclick="backToSearch()">← Назад</button>'; return; }
+
+    if (!recipe) { view.innerHTML = '<p>Не знайдено</p><button class="back-btn" onclick="backToSearch()">← Назад</button>'; return; }
 
     currentScannedRecipe = recipe;
-    const emojis = {'Сніданок':'🌅','Обід':'☀️','Вечеря':'🌙','Святкова страва':'🎉','Dessert':'🍰','Pasta':'🍝','Seafood':'🐟','Chicken':'🍗','Beef':'🥩','Vegan':'🌱','Vegetarian':'🥬'};
+    const emojis = { 'Сніданок': '🌅', 'Обід': '☀️', 'Вечеря': '🌙', 'Святкова страва': '🎉', 'Dessert': '🍰', 'Pasta': '🍝', 'Seafood': '🐟', 'Chicken': '🍗', 'Beef': '🥩', 'Vegan': '🌱', 'Vegetarian': '🥬' };
     view.innerHTML = `
         <button class="back-btn" onclick="backToSearch()">← Назад до пошуку</button>
-        ${recipe.image?`<img src="${recipe.image}" class="recipe-hero-img">`:''}
-        <div class="recipe-view-header"><span class="scanned-emoji">${emojis[recipe.category]||'🍽️'}</span>
-        <div><h3>${recipe.name}</h3>${recipe.source==='themealdb'?'<span class="source-badge inline">🌐 З інтернету</span>':''}</div></div>
+        ${recipe.image ? `<img src="${recipe.image}" class="recipe-hero-img">` : ''}
+        <div class="recipe-view-header">
+            <span class="scanned-emoji">${emojis[recipe.category] || '🍽️'}</span>
+            <div><h3>${recipe.name}</h3>${recipe.source === 'themealdb' ? '<span class="source-badge inline">🌐 З інтернету</span>' : ''}</div>
+        </div>
         <div class="scanned-meta"><span class="note-tag">${recipe.category}</span><span class="note-time">⏱ ${recipe.time} хв</span></div>
-        <div class="scanned-section"><h4>Інгредієнти (${recipe.ingredients.length})</h4><ul>${recipe.ingredients.map(i=>`<li>${i}</li>`).join('')}</ul></div>
-        <div class="scanned-section"><h4>Кроки приготування</h4><ol>${recipe.steps.map(s=>`<li>${s}</li>`).join('')}</ol></div>
+        <div class="scanned-section"><h4>Інгредієнти (${recipe.ingredients.length})</h4><ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul></div>
+        <div class="scanned-section"><h4>Кроки приготування</h4><ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol></div>
         <button class="btn-primary save-to-notes-btn" onclick="saveToNotes()">💾 Зберегти в Мій Блокнот</button>`;
 }
 
@@ -207,7 +213,7 @@ function showCategoryPicker() {
     if (!currentScannedRecipe) return;
     let modal = document.getElementById('category-modal');
     if (!modal) {
-        modal = document.createElement('div'); modal.id='category-modal'; modal.className='modal-overlay';
+        modal = document.createElement('div'); modal.id = 'category-modal'; modal.className = 'modal-overlay';
         modal.innerHTML = `<div class="modal-content category-picker"><h3>Куди зберегти?</h3>
             <p class="picker-recipe-name" id="picker-recipe-name"></p>
             <div class="category-options">
@@ -222,18 +228,18 @@ function showCategoryPicker() {
     document.getElementById('picker-recipe-name').textContent = currentScannedRecipe.name;
     modal.classList.add('active');
 }
-function closeCategoryPicker(){const m=document.getElementById('category-modal');if(m)m.classList.remove('active');}
-function confirmSave(category){
-    if(!currentScannedRecipe)return;
-    let notes=[];try{const s=localStorage.getItem('smartcookbook_notes');if(s)notes=JSON.parse(s);}catch(e){}
-    notes.unshift({id:Date.now(),name:currentScannedRecipe.name,category,time:currentScannedRecipe.time,
-        ingredients:Array.isArray(currentScannedRecipe.ingredients)?currentScannedRecipe.ingredients.join('\n'):currentScannedRecipe.ingredients,
-        steps:Array.isArray(currentScannedRecipe.steps)?currentScannedRecipe.steps.join('\n'):currentScannedRecipe.steps,
-        image:currentScannedRecipe.image||'',createdAt:new Date().toISOString()});
-    localStorage.setItem('smartcookbook_notes',JSON.stringify(notes));
+function closeCategoryPicker() { const m = document.getElementById('category-modal'); if (m) m.classList.remove('active'); }
+function confirmSave(category) {
+    if (!currentScannedRecipe) return;
+    let notes = []; try { const s = localStorage.getItem('smartcookbook_notes'); if (s) notes = JSON.parse(s); } catch(e) {}
+    notes.unshift({ id: Date.now(), name: currentScannedRecipe.name, category, time: currentScannedRecipe.time,
+        ingredients: Array.isArray(currentScannedRecipe.ingredients) ? currentScannedRecipe.ingredients.join('\n') : currentScannedRecipe.ingredients,
+        steps: Array.isArray(currentScannedRecipe.steps) ? currentScannedRecipe.steps.join('\n') : currentScannedRecipe.steps,
+        image: currentScannedRecipe.image || '', createdAt: new Date().toISOString() });
+    localStorage.setItem('smartcookbook_notes', JSON.stringify(notes));
     closeCategoryPicker();
-    const btn=document.querySelector('.save-to-notes-btn');
-    if(btn){btn.textContent='✅ Збережено!';btn.style.background='#2D5016';btn.disabled=true;
-        setTimeout(()=>{btn.textContent='💾 Зберегти в Мій Блокнот';btn.style.background='';btn.disabled=false;},2000);}
+    const btn = document.querySelector('.save-to-notes-btn');
+    if (btn) { btn.textContent = '✅ Збережено!'; btn.style.background = '#2D5016'; btn.disabled = true;
+        setTimeout(() => { btn.textContent = '💾 Зберегти в Мій Блокнот'; btn.style.background = ''; btn.disabled = false; }, 2000); }
 }
-function saveToNotes(){showCategoryPicker();}
+function saveToNotes() { showCategoryPicker(); }
