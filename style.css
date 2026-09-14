@@ -103,7 +103,7 @@ header .subtitle { font-size: 15px; color: #999; margin-top: 4px; }
 .search-box input:focus { outline: none; border-color: #E65F2B; }
 
 /* СІТКА РЕЦЕПТІВ */
-.recipes-grid, .notes-grid {
+.notes-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
 }
@@ -112,24 +112,25 @@ header .subtitle { font-size: 15px; color: #999; margin-top: 4px; }
 }
 
 /* КАРТОЧКА РЕЦЕПТА */
+.recipes-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
 .recipe-card {
     background: white; border-radius: 16px; overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 20px 12px;
+    cursor: pointer; transition: transform 0.3s ease;
 }
-.recipe-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+.recipe-card:hover { transform: translateY(-3px); }
 
 .recipe-card-image {
-    width: 100%; height: 160px;
-    background: linear-gradient(135deg, #FFE0CC, #FFD0B5);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 60px;
+    font-size: 50px; margin-bottom: 8px;
 }
 
-.recipe-card-body { padding: 16px; }
-.recipe-card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-.recipe-card-meta { font-size: 13px; color: #888; }
+.recipe-card-body { padding: 0; }
+.recipe-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.recipe-card-meta { font-size: 12px; color: #888; }
 
 .recipe-card-tag {
     display: inline-block; padding: 4px 10px; border-radius: 10px;
@@ -538,16 +539,16 @@ header .subtitle { font-size: 15px; color: #999; margin-top: 4px; }
     .tab-btn.active::after { display: none; }
 
     /* Каталог: 3 колонки, компактні картки */
-    .catalog-grid {
+    .recipes-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
-    .recipe-card { margin-bottom: 0; border-radius: 12px; }
-    .recipe-card-image { height: 80px; font-size: 40px !important; }
-    .recipe-card-body { padding: 8px; }
-    .recipe-card-title { font-size: 12px; line-height: 1.2; margin-bottom: 4px; }
-    .recipe-card-meta { font-size: 10px; color: #888; }
-    .recipe-card-tag { font-size: 9px; padding: 2px 6px; border-radius: 6px; }
+    .recipe-card { padding: 12px 8px; border-radius: 12px; }
+    .recipe-card-image { font-size: 36px; margin-bottom: 6px; }
+    .recipe-card-body { padding: 0; }
+    .recipe-card-title { font-size: 11px; line-height: 1.2; margin-bottom: 2px; }
+    .recipe-card-meta { font-size: 9px; color: #888; }
+    .recipe-card-tag { font-size: 8px; padding: 2px 5px; border-radius: 6px; }
 
     /* Фільтри: горизонтальний скрол chips */
     .category-filters {
@@ -613,11 +614,10 @@ header .subtitle { font-size: 15px; color: #999; margin-top: 4px; }
 
 @media (max-width: 400px) {
     .tab-btn { font-size: 11px; padding: 7px 8px; }
-    .catalog-grid, .holidays-grid { grid-template-columns: repeat(2, 1fr); }
+    .recipes-grid, .holidays-grid { grid-template-columns: repeat(2, 1fr); }
     .filter-btn { font-size: 11px; padding: 5px 10px; }
-    .recipe-card-image { height: 70px; font-size: 34px !important; }
-    .recipe-card-body { padding: 6px; }
-    .recipe-card-title { font-size: 11px; }
+    .recipe-card-image { font-size: 30px; }
+    .recipe-card-title { font-size: 10px; }
     .holiday-emoji { font-size: 26px; }
     .holiday-info h3 { font-size: 10px; }
 }
