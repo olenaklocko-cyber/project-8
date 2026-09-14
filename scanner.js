@@ -1,7 +1,6 @@
 // ===== scanner.js — Пошук рецептів =====
 let currentScannedRecipe = null;
 let searchTimeout = null;
-const MEALDB = 'https://www.themealdb.com/api/json/v1/1';
 
 // 76 українських рецептів (ключі: n=назва, c=категорія, t=час, i=інгредієнти, s=кроки)
 const LOCAL=[
